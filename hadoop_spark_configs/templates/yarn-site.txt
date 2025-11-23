@@ -1,0 +1,100 @@
+<configuration>
+    <property>
+        <name>yarn.resourcemanager.resource-tracker.address</name>
+        <value>**resourcemanager**.cs.colostate.edu:**port8**</value>
+        <description>host is the hostname of the resource manager and
+            port is the port on which the NodeManagers contact the Resource Manager.
+        </description>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.scheduler.address</name>
+        <value>**resourcemanager**.cs.colostate.edu:**port9**</value>
+        <description>host is the hostname of the resourcemanager and port is the port
+            on which the Applications in the cluster talk to the Resource Manager.
+        </description>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.scheduler.class</name>
+        <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+        <description>In case you do not want to use the default scheduler</description>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.address</name>
+        <value>**resourcemanager**.cs.colostate.edu:**port10**</value>
+        <description>the host is the hostname of the ResourceManager and the port is the port on
+            which the clients can talk to the Resource Manager. </description>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.local-dirs</name>
+        <value>${hadoop.tmp.dir}/nodemanager/data</value>
+        <description>the local directories used by the nodemanager</description>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.address</name>
+        <value>0.0.0.0:**port11**</value>
+        <description>the nodemanagers bind to this port</description>
+    </property>
+    
+
+    <property>
+        <name>yarn.nodemanager.remote-app-log-dir</name>
+        <value>${hadoop.tmp.dir}/nodemanager/app-logs</value>
+        <description>directory on hdfs where the application logs are moved to </description>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.log-dirs</name>
+        <value>${hadoop.tmp.dir}/nodemanager/log</value>
+        <description>the directories used by Nodemanagers as log directories</description>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+        <description>shuffle service that needs to be set for Map Reduce to run </description>
+    </property>
+
+    <property>
+        <name>yarn.scheduler.capacity.root.queues</name>
+        <value>default</value>
+    </property>
+
+    <property>
+        <name>yarn.scheduler.capacity.root.default.capacity</name>
+        <value>100</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.localizer.address</name>
+        <value>0.0.0.0:**port12**</value>
+        <description>Address where the localizer IPC is.</description>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.webapp.address</name>
+        <value>0.0.0.0:**port13**</value>
+        <description>NM Webapp address.</description>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.webapp.address</name>
+        <value>0.0.0.0:**port14**</value>
+        <description>Address of the ResourceManager web app</description>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.admin.address</name>
+        <value>**resourcemanager**.cs.colostate.edu:**port15**</value>
+        <description>the host is the hostname of the ResourceManager and the port is the port on
+            which the clients can talk to the Resource Manager. </description>
+    </property>
+    
+</configuration>
+
+<!-- make sure to update all hosts and ports based on the pdf with allocations--> 
+<!-- be mindful to have the same resource manager host across all properties-->

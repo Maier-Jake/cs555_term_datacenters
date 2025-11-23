@@ -1,0 +1,61 @@
+<configuration>
+    <property>
+        <name>mapreduce.cluster.temp.dir</name>
+        <value>${hadoop.tmp.dir}/mapred/temp</value>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>mapreduce.cluster.local.dir</name>
+        <value>${hadoop.tmp.dir}/mapred/local</value>
+        <final>true</final>
+    </property>
+    
+    <property>
+        <name>mapreduce.jobtracker.system.dir</name>
+        <value>${hadoop.tmp.dir}/mapred/system</value>
+        <final>true</final>
+    </property>
+    <property>
+        <name>mapreduce.jobtracker.staging.root.dir</name>
+        <value>${hadoop.tmp.dir}/mapred/staging</value>
+        <final>true</final>
+    </property>
+    <property>
+        <name>mapreduce.shuffle.port</name>
+        <value>**port7**</value>
+    </property>
+
+<property> 
+    <name>mapreduce.application.classpath</name>
+    <value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/common/*,$HADOOP_MAPRED_HOME/share/hadoop/common/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/yarn/*,$HADOOP_MAPRED_HOME/share/hadoop/yarn/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/hdfs/*,$HADOOP_MAPRED_HOME/share/hadoop/hdfs/lib/*</value>
+</property>
+
+<property>
+  <name>yarn.app.mapreduce.am.env</name>
+  <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+</property>
+
+<property>
+  <name>mapreduce.map.env</name>
+  <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+</property>
+
+<property>
+  <name>mapreduce.reduce.env</name>
+  <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+</property>
+
+<property>
+  <name>mapreduce.map.log.level</name>
+  <value>WARN</value>
+</property>
+
+
+<property>
+  <name>mapreduce.reduce.log.level</name>
+  <value>WARN</value>
+</property>
+
+</configuration>
+<!-- make sure to update the port based on the pdf with allocations for each student--> 

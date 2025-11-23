@@ -1,0 +1,8 @@
+<configuration>
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://**namenode**.cs.colostate.edu:**port1**</value>
+    </property>
+</configuration>
+<!--make sure you update NAMENODE_HOST and PORT, please use the pdf with host/port allocations-->
+<!--for NAMENODE_HOST, if you intend the use host named abc make sure you add the full URI - abc.cs.colostate.edu-->

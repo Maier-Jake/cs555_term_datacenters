@@ -1,0 +1,50 @@
+<configuration>
+
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>${hadoop.tmp.dir}/dfs/name</value>
+    </property>
+
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>${hadoop.tmp.dir}/dfs/data</value>
+    </property>
+
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>**namenode**.cs.colostate.edu:**port2**</value>
+        <description>Location of the DFS web UI</description>
+    </property>
+    
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>**secondary**.cs.colostate.edu:**port3**</value>
+        <description>Web UI of the secondary name node</description>
+    </property>
+
+    <property>
+        <name>dfs.datanode.address</name>
+        <value>0.0.0.0:**port4**</value>
+        <description>The address where the datanode server will listen to. If the port is 0 then the server will start
+            on a free port.
+        </description>
+    </property>
+
+    <property>
+        <name>dfs.datanode.http.address</name>
+        <value>0.0.0.0:**port5**</value>
+        <description>The datanode http server address and port. If the port is 0 then the server will start on a free
+            port.
+        </description>
+    </property>
+
+    <property>
+        <name>dfs.datanode.ipc.address</name>
+        <value>0.0.0.0:**port6**</value>
+        <description>The datanode ipc server address and port. If the port is 0 then the server will start on a free
+            port.
+        </description>
+    </property>
+</configuration>
+<!-- make sure to update all hosts and ports based on the pdf with allocations--> 
+<!-- be mindful to have the same primary namenode as in core-site.xml-->

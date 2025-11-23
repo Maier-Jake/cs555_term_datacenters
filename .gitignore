@@ -1,0 +1,10 @@
+target/
+.project
+.settings/
+.bloop/
+.bsp/
+.metals/
+.vscode/
+inputs/
+temp.scala
+project/

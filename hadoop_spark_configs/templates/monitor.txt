@@ -1,0 +1,5 @@
+cd $HADOOP_CONF_DIR
+for i in `cat all_nodes`
+do
+ssh $i "hostname; jps"
+done

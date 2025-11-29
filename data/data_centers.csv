@@ -1,0 +1,20 @@
+Facility_ID,Facility_Name,Operator,City,State,Utility_Name,Latitude,Longitude,Opening_Year,Opening_Month,Capacity_MW,Verified,Data_Source,Source_URL,Notes
+DC001,Ashburn Campus,AWS,Ashburn,VA,Appalachian Power Co,39.0438,-77.4874,2019.0,6.0,150.0,Yes,AWS Press Release,https://press.aboutamazon.com/...,Major expansion
+DC002,Prineville Data Center,Meta,Prineville,OR,PacifiCorp,44.2999,-120.8342,2018.0,3.0,200.0,Yes,Company Blog,https://engineering.fb.com/...,Wind-powered
+DC003,Council Bluffs,Google,Council Bluffs,IA,MidAmerican Energy Co,41.2619,-95.8608,2020.0,9.0,175.0,Yes,Google Cloud Blog,https://cloud.google.com/blog/...,Campus expansion
+DC004,Redmond HQ Expansion,Microsoft,Redmond,WA,Puget Sound Energy Inc,47.674,-122.1215,2021.0,1.0,120.0,Yes,Microsoft News,https://news.microsoft.com/...,Azure capacity
+DC005,Reno Technology Park,Switch,Reno,NV,Nevada Power Co,39.5296,-119.8138,2020.0,11.0,250.0,Partial,News Article,https://renotahoetoday.com/...,Multi-tenant facility
+DC006,Google Data Center - Berkeley County,Google,Moncks Corner,SC,"Santee Electric Coop, Inc",33.064111,-80.043361,2007.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Expanded in 2013, 150 employees"
+DC007,Google Data Center - Council Bluffs,Google,Council Bluffs,IA,MidAmerican Energy Co,41.221583,-95.863867,2009.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2007, first phase 2009, expanded 2013-2014, 130 employees"
+DC008,Google Data Center - Douglas County,Google,Lithia Springs,GA,Georgia Power Co,33.749733,-84.584814,2003.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Since 2003, 350 employees"
+DC010,Google Data Center - Lenoir,Google,Lenoir,NC,"Duke Energy Carolinas, LLC",35.89855,-81.547383,2009.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2007, completed 2009, 110+ employees"
+DC011,Google Data Center - Montgomery County,Google,Clarksville,TN,City of Clarksville - (TN),36.627139,-87.257694,2015.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,Announced 2015
+DC012,Google Data Center - Mayes County,Google,Pryor Creek,OK,Grand River Dam Authority,36.241139,-95.330061,2007.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2007, expanded 2012, 400+ employees, at MidAmerica Industrial Park"
+DC013,Google Data Center - The Dalles,Google,The Dalles,OR,Northern Wasco County PUD,45.632511,-121.202267,2006.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Since 2006, 80 full-time employees, Project 02, uses hydroelectric power"
+DC014,Google Data Center - Reno,Google,Reno,NV,Nevada Power Co,,,2018.0,,,Yes,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2018, 1,210 acres at Tahoe Reno Industrial Center"
+DC015,Google Data Center - Henderson,Google,Henderson,NV,Nevada Power Co,,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2019, 64 acres, $1.2B building costs"
+DC016,Google Data Center - Loudoun County,Google,Ashburn,VA,Appalachian Power Co,,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,Announced 2019
+DC017,Google Data Center - Kansas City,Google,Kansas City,MO,Evergy Missouri West,,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2019, Northland area, under construction"
+DC018,Google Data Center - Midlothian,Google,Midlothian,TX,"TXU Energy Retail Co, LLC",,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2019, 375 acres, $600M building costs"
+DC019,Google Data Center - New Albany,Google,New Albany,OH,AEP Energy,,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2019, 400 acres, $600M building costs"
+DC020,Google Data Center - Papillion,Google,Papillion,NE,Omaha Public Power District,,,2019.0,,,Partial,Encyclopedia.pub / Wikipedia,https://encyclopedia.pub/entry/34047,"Announced 2019, 275 acres, $600M building costs"

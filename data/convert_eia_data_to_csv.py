@@ -111,9 +111,9 @@ def clean_data(df, year):
             if '.4' in str(col) or 'Total' in str(col):
                 total = col
                 break
-            if not total:
-                # If there is no 'total' column, use the last column
-                total = sales_cols[1]
+        if not total:
+            # If there is no 'total' column, use the last column
+            total = sales_cols[1]
         column_map[total] = 'Sales_MWh'
 
     if customer_cols:
@@ -122,14 +122,15 @@ def clean_data(df, year):
             if '.4' in str(col) or 'Total' in str(col):
                 total = col
                 break
-            if not total:
-                # If there is no 'total' column, use the last column
-                total = customer_cols[1]
+        if not total:
+            # If there is no 'total' column, use the last column
+            total = customer_cols[1]
         column_map[total] = 'Customers'
 
     if not column_map:
         print(f"Warning: Could not find any standard EIA-816 columns from {list(df.columns[:10])}")
-        return None
+        print(f"Available columns: {list(df.columns[:10])}")
+        return pd.DataFrame()
 
     df_clean = df[list(column_map.keys())].copy()
     df_clean = df_clean.rename(columns=column_map)

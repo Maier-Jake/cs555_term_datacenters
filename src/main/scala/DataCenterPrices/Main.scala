@@ -96,7 +96,7 @@ object Main {
     val states = dataCenters.select("State").distinct()
     val stateYearGrid = states.crossJoin(years)
 
-    states.show(52)
+    // states.show(52)
 
     // Get a dataframe with the datacenters grouped by the state they are in and the year they are opened.
     val dcByStateYear = dataCenters
@@ -113,16 +113,28 @@ object Main {
     // Now I need to join my overall stateYearGrid with the datacenter data
     val w = Window.partitionBy("State").orderBy("Year")
 
+    // Some of our datacenters are from BEFORE 2013, so lets add those in as the baseline for the dataset...
+    val prePeriodDC = dataCenters
+      .filter($"Opening_Year" < minYear)
+      .groupBy("State")
+      .agg(
+        count("*").alias("Preexisting_DataCenters"),
+        sum($"Capacity_MW").alias("Preexisting_Capacity_MW")
+      )
+
     val dcFull = stateYearGrid
       .join(dcByStateYear, Seq("State", "Year"), "left")
       .na.fill(0, Seq("Num_DataCenters_Opened", "Total_Capacity_Added"))
+      // add the baseline number of datacenters
+      .join(prePeriodDC, Seq("State"), "left")
+      .na.fill(0, Seq("Preexisting_DataCenters", "Preexisting_Capacity_MW"))
       .withColumn("Cumulative_DataCenters",
-        sum($"Num_DataCenters_Opened").over(w)
+        $"Preexisting_DataCenters" + sum($"Num_DataCenters_Opened").over(w)
       )
       .withColumn("Cumulative_Capacity_MW",
-        sum($"Total_Capacity_Added").over(w)
+        $"Preexisting_Capacity_MW" + sum($"Total_Capacity_Added").over(w)
       )
-      .drop("Num_DataCenters_Opened", "Total_Capacity_Added")
+      .drop("Num_DataCenters_Opened", "Total_Capacity_Added", "Preexisting_DataCenters", "Preexisting_Capacity_MW")
 
     // println("Preview of dcFull:")
     // dcFull.filter($"State" === "VA")

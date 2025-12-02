@@ -1,27 +1,21 @@
 package DataCenterPrices
 
-import org.apache.spark.sql.Column
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.{StructType, StructField, DoubleType, StringType, IntegerType}
+import org.apache.spark.sql.types._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.regression.GBTRegressor
-import scala.util.matching.Regex
-import java.nio.file.Paths
-import java.io.File
-import java.io.PrintWriter
 
 object Main {
   def main(args: Array[String]): Unit = {
     // Step 1: Create Spark session
     val spark = SparkSession.builder.appName("Impact of Data Centers on Residential Electricity Prices").getOrCreate()
 
-    spark.sparkContext.setLogLevel("ERROR")
-    println("Log level set to ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    println("Log level set to INFO")
 
-    // Import implicits like $"columnName" after SparkSession creation
     import spark.implicits._
 
     // Step 2: Load the data_centers data
@@ -41,7 +35,8 @@ object Main {
       .add("Data_Source", StringType)
       .add("Source_URL", StringType)
       .add("Notes", StringType)
-    val dataCenters = spark.read
+
+    val rawDatacenters = spark.read
       .option("header", "true")
       .schema(dataCenterSchema)
       .csv(args(0) + "/data_centers.csv")
@@ -50,10 +45,6 @@ object Main {
       .withColumn("Opening_Month", $"Opening_Month".cast("int"))
       .drop("Notes", "Source_URL", "Data_Source", "Verified",
         "Opening_Month", "Latitude", "Longitude")
-    // println(s"Loaded Data Centers: ${dataCenters.count()} rows")
-
-    // println("Preview of dataCenters:")
-    // dataCenters.show(10, truncate = false)
 
     // Step 3: Load the power_costs data
     val powerSchema = new StructType()
@@ -65,12 +56,13 @@ object Main {
       .add("Customers", DoubleType)
       .add("Year", IntegerType)
       .add("Price_Per_kWh", DoubleType)
+
     val powerCosts = spark.read
       .option("header", "true")
       .schema(powerSchema)
       .csv(args(0) + "/cleaned_eia_years" + "/power_cost_*.csv")
-      .drop("Revenue_Thousands","Sales_MWh")
       .filter($"Customers" > 400 && $"Sales_MWh" > 400)
+      .drop("Revenue_Thousands", "Sales_MWh")
       /* require that we have atleast a decent sized utility, 
        * I noticed that we had repeats because some EIA data splits utility companies per 
        * customer class but that split is not defined in the data */
@@ -79,83 +71,105 @@ object Main {
       .withColumn("Utility_ID", col("Utility_ID").cast("double").cast("int"))
       .withColumn("Customers", col("Customers").cast("double").cast("int"))
       .cache()
-    // println(s"Loaded Power Costs: ${powerCosts.count()} rows")
 
-    // println("Preview of powerCosts:")
-    // powerCosts.show(10, truncate = false)
-
-    // Step 4: Feed into the training of the model
-    // Model Goal: Determine if the opening of data centers is causing residential energy prices to increase.
-    // We need the able to feed "theoretical" data center openings to see how the state might raise their residential energy prices.
+    // Step 4: Build panel of states x years
 
     val minYear = powerCosts.agg(min("Year")).as[Int].first()
     val maxYear = powerCosts.agg(max("Year")).as[Int].first()
-    println(s"Year range: $minYear to $maxYear")
-    val years = spark.range(minYear, maxYear + 1).withColumnRenamed("id", "Year")
+
+    val years = spark.range(minYear, maxYear + 1).toDF("Year")
     // Yeah, there is probably an issue here if we get states that don't have any datacenters. Like idk I'm gonna guess mississippi and or louisiana don't have any lol
-    val states = dataCenters.select("State").distinct()
+    val states = rawDatacenters.select("State").distinct()
     val stateYearGrid = states.crossJoin(years)
 
-    // states.show(52)
-
-    // Get a dataframe with the datacenters grouped by the state they are in and the year they are opened.
-    val dcByStateYear = dataCenters
-      .groupBy($"State", $"Opening_Year")
-      .agg(
-        count("*").alias("Num_DataCenters_Opened"),
-        sum($"Capacity_MW").alias("Total_Capacity_Added")
-      )
-      .withColumnRenamed("Opening_Year", "Year")
-    
-    // println("Preview of dcByStateYear:")
-    // dcByStateYear.show(20, truncate = false)
-
-    // Now I need to join my overall stateYearGrid with the datacenter data
-    val w = Window.partitionBy("State").orderBy("Year")
+    // Step 5: aggregate data with the State x Year grid
 
     // Some of our datacenters are from BEFORE 2013, so lets add those in as the baseline for the dataset...
-    val prePeriodDC = dataCenters
+    val prePeriod = rawDatacenters
       .filter($"Opening_Year" < minYear)
       .groupBy("State")
       .agg(
-        count("*").alias("Preexisting_DataCenters"),
-        sum($"Capacity_MW").alias("Preexisting_Capacity_MW")
+        count("*").alias("Pre_DC"),
+        sum("Capacity_MW").alias("Pre_MW")
       )
 
-    val dcFull = stateYearGrid
-      .join(dcByStateYear, Seq("State", "Year"), "left")
-      .na.fill(0, Seq("Num_DataCenters_Opened", "Total_Capacity_Added"))
-      // add the baseline number of datacenters
-      .join(prePeriodDC, Seq("State"), "left")
-      .na.fill(0, Seq("Preexisting_DataCenters", "Preexisting_Capacity_MW"))
-      .withColumn("Cumulative_DataCenters",
-        $"Preexisting_DataCenters" + sum($"Num_DataCenters_Opened").over(w)
-      )
-      .withColumn("Cumulative_Capacity_MW",
-        $"Preexisting_Capacity_MW" + sum($"Total_Capacity_Added").over(w)
-      )
-      .drop("Num_DataCenters_Opened", "Total_Capacity_Added", "Preexisting_DataCenters", "Preexisting_Capacity_MW")
-
-    // println("Preview of dcFull:")
-    // dcFull.filter($"State" === "VA")
-    //   .orderBy("Year")
-    //   .show(20, truncate = false)
-
-    // Now we need to get the average electricity price for each state for each year and add that as columns to dcFull
-    val stateYearPrices = powerCosts
-      .groupBy("State", "Year")
+    val byYear = rawDatacenters
+      .filter($"Opening_Year" >= minYear)
+      .groupBy("State", "Opening_Year")
       .agg(
-        avg("Price_Per_kWh").alias("Avg_Residential_kWh")
+        count("*").alias("DC_Opened"),
+        sum("Capacity_MW").alias("MW_Added")
+      )
+      .withColumnRenamed("Opening_Year", "Year")
+
+    // println("Preview of byYear:")
+    // byYear.show(20, truncate = false)
+
+    val w = Window.partitionBy("State").orderBy("Year")
+    val dcJoinedAndCum = stateYearGrid
+      .join(byYear, Seq("State", "Year"), "left")
+      .na.fill(0, Seq("DC_Opened", "MW_Added"))
+      .join(prePeriod, Seq("State"), "left")
+      .na.fill(0, Seq("Pre_DC", "Pre_MW"))
+      .withColumn("Cum_DC", $"Pre_DC" + sum($"DC_Opened").over(w))
+      .withColumn("Cum_MW", $"Pre_MW" + sum($"MW_Added").over(w))
+      .drop("Pre_DC", "Pre_MW", "DC_Opened", "MW_Added")
+
+    // Step 7: Add avg electricity prices
+
+    val prices = powerCosts
+      .groupBy("State", "Year")
+      .agg(avg("Price_Per_kWh").alias("Avg_kWh"))
+
+    val dcFull = dcJoinedAndCum
+      .join(prices, Seq("State", "Year"), "left")
+      .na.drop("any", Seq("Avg_kWh"))
+
+    println("Preview of dcFull:")
+    dcFull.show(20, truncate = false)
+
+    val stripped = dcFull
+      .select(
+        $"State",
+        $"Year",
+        $"Cum_DC".cast("double"),
+        $"Cum_MW".cast("double"),
+        $"Avg_kWh".cast("double")
       )
 
-    val fullPanel = dcFull
-      .join(stateYearPrices, Seq("State", "Year"), "left")
-      .na.drop("any", Seq("Avg_Residential_kWh"))
+    // Train a gradient boosted regression tree model
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("Cum_DC", "Cum_MW"))
+      .setOutputCol("features")
 
-    // Any data center that opened before minYear in EIA is just part of the starting conditions of the grid.
-    // We will not estimate its opening shock... we will just treat it as baseline load.
+    val mlDF = assembler.transform(stripped)
+      .select("features", "Avg_kWh")
+      .withColumnRenamed("Avg_kWh", "label")
 
-    fullPanel.show()
+    println("Sample features row:")
+    // mlDF.select("features","label").show(5, truncate=false)
+    val mlSafeDF = mlDF.repartition(100).cache().na.fill(0)
+    val Array(train, test) = mlSafeDF.randomSplit(Array(0.8, 0.2), seed = 19)
+
+    val gbt = new GBTRegressor()
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+      .setMaxIter(200)
+      .setMaxDepth(5)
+
+    println("Beginning training...")
+    val model = gbt.fit(train)
+    println("Training completed.")
+
+    val predictions = model.transform(test)
+
+    val evaluator = new RegressionEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+
+    println("RMSE: " + evaluator.setMetricName("rmse").evaluate(predictions))
+    println("R2:   " + evaluator.setMetricName("r2").evaluate(predictions))
+
     spark.stop()
 
   }

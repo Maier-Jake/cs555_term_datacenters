@@ -4,7 +4,16 @@ import os
 import re
 from pathlib import Path
 
-def process_file(input_file, output_dir='.'):
+CUSTOMER_COLUMN = "Customers"
+PRICE_COLUMN = "Price_Per_kWh"
+REVENUE_COLUMN = "Revenue_Thousands"
+UTILITY_ID_COLUMN = "Utility_ID"
+UTILITY_NAME_COLUMN = "Utility_Name"
+SALES_COLUMN = "Sales_MWh"
+STATE_COLUMN = "State"
+YEAR_COLUMN = "Year"
+
+def process_file(input_file, output_dir='.', min_customers=0):
     """Processes an EIA-861 file"""
 
     if not os.path.exists(input_file):
@@ -28,7 +37,16 @@ def process_file(input_file, output_dir='.'):
     print(f"Detected year: {year}")
 
     df_clean = clean_data(df, year)
+
+    if df_clean is None or len(df_clean) == 0:
+        print(f"Error: data cleaning failed")
+        return False
+
     print(f"Cleaned dataset: {len(df_clean):,} rows")
+
+    df_clean = remove_entries_with_too_few_customers(df_clean, min_customers)
+
+    df_clean = remove_duplicates(df_clean)
 
     print("\n Data Summary:")
     if 'State' in df_clean.columns:
@@ -113,7 +131,7 @@ def clean_data(df, year):
                 break
         if not total:
             # If there is no 'total' column, use the last column
-            total = sales_cols[1]
+            total = sales_cols[-1]
         column_map[total] = 'Sales_MWh'
 
     if customer_cols:
@@ -124,7 +142,7 @@ def clean_data(df, year):
                 break
         if not total:
             # If there is no 'total' column, use the last column
-            total = customer_cols[1]
+            total = customer_cols[-1]
         column_map[total] = 'Customers'
 
     if not column_map:
@@ -149,20 +167,80 @@ def clean_data(df, year):
     return df_clean
 
 
+def remove_entries_with_too_few_customers(df, min_customers=0):
+    if min_customers == 0:
+        print("Min customers set to 0, nothing to do")
+        return df
+
+    if df is None:
+        print("Error, df is None")
+        sys.exit(1)
+
+    if CUSTOMER_COLUMN not in df.columns:
+        print("Customer column not found in data frame, cannot do anything")
+        return df
+
+    original_count = len(df)
+    df = df[df[CUSTOMER_COLUMN] >= min_customers].copy()
+    removed = original_count - len(df)
+    print(f"\nFiltered out {removed:,} entries with <{min_customers} customers")
+    print(f"Remaining: {len(df):,} rows")
+
+    return df
+
+
+def remove_duplicates(df):
+    if df is None:
+        print("Error, df is None")
+        sys.exit(1)
+
+    duplicates = df.groupby([UTILITY_NAME_COLUMN, STATE_COLUMN]).size()
+    multi_entry = duplicates[duplicates > 1]
+    if len(multi_entry) > 0:
+        print(f"{len(multi_entry)} utilities still have duplicates")
+
+    if CUSTOMER_COLUMN not in df.columns:
+        print("Customer column not found in data frame, cannot do anything")
+        return df
+
+    original_count = len(df)
+    grouped = df.groupby([UTILITY_NAME_COLUMN, STATE_COLUMN, YEAR_COLUMN])
+
+    agg_dict = {
+        UTILITY_ID_COLUMN: 'first',
+        REVENUE_COLUMN: 'sum',
+        SALES_COLUMN: 'sum',
+        CUSTOMER_COLUMN: 'sum'}
+
+    df_agg = grouped.agg(agg_dict).reset_index()
+    # Recalucalte price from aggregated values
+    df_agg[PRICE_COLUMN] = df_agg[REVENUE_COLUMN] / df_agg[SALES_COLUMN]
+
+    removed = original_count - len(df_agg)
+    print(f"    Before aggregation: {original_count:,} rows")
+    print(f"    After: {len(df_agg):,}")
+
+    return df_agg
+
+
 def show_help():
     """Help menu"""
-    print("Usage: Specify the EIA-861 Excel file to be converted to a csv")
+    print("Usage: Specify the EIA-861 Excel file to be converted to a csv, optionally specify a min_customers value to automatically remove rows with fewer than that many customers")
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         show_help()
         sys.exit(1)
 
     input_file = sys.argv[1]
     output_dir = 'cleaned_eia_years'
 
-    success = process_file(input_file, output_dir)
+    min_customers = 0
+    if len(sys.argv) == 3:
+        min_customers = int(sys.argv[2])
+
+    success = process_file(input_file, output_dir, min_customers)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":

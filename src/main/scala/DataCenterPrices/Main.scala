@@ -56,13 +56,13 @@ object Main {
 
     // Step 3: Load the power_costs data
     val powerSchema = new StructType()
-      .add("Utility_ID", StringType)
       .add("Utility_Name", StringType)
       .add("State", StringType)
+      .add("Year", IntegerType)
+      .add("Utility_ID", StringType)
       .add("Revenue_Thousands", DoubleType)
       .add("Sales_MWh", DoubleType)
       .add("Customers", DoubleType)
-      .add("Year", IntegerType)
       .add("Price_Per_kWh", DoubleType)
 
     val powerCosts = spark.read

@@ -159,7 +159,7 @@ object Main {
 
     println("Sample features row:")
     // mlDF.select("features","label").show(5, truncate=false)
-    val mlSafeDF = mlDF.repartition(100).cache().na.fill(0)
+    val mlSafeDF = mlDF.coalesce(4).cache().na.fill(0)
     val Array(train, test) = mlSafeDF.randomSplit(Array(0.8, 0.2), seed = 19)
 
     val gbt = new GBTRegressor()

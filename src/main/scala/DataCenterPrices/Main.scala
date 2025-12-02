@@ -11,7 +11,11 @@ import org.apache.spark.ml.regression.GBTRegressor
 object Main {
   def main(args: Array[String]): Unit = {
     // Step 1: Create Spark session
-    val spark = SparkSession.builder.appName("Impact of Data Centers on Residential Electricity Prices").getOrCreate()
+    // val spark = SparkSession.builder.appName("Impact of Data Centers on Residential Electricity Prices").getOrCreate()
+    val spark = SparkSession.builder().appName("Impact of Data Centers on Residential Electricity Prices")
+      .config("spark.executor.extraJavaOptions", "-Dlog4j.configuration=log4j2.properties")
+      .config("spark.driver.extraJavaOptions", "-Dlog4j.configuration=log4j2.properties")
+      .getOrCreate()
 
     spark.sparkContext.setLogLevel("INFO")
     println("Log level set to INFO")
@@ -45,6 +49,10 @@ object Main {
       .withColumn("Opening_Month", $"Opening_Month".cast("int"))
       .drop("Notes", "Source_URL", "Data_Source", "Verified",
         "Opening_Month", "Latitude", "Longitude")
+    println(s"Loaded Data Centers: ${rawDatacenters.count()} rows")
+    println("Preview of rawDatacenters:")
+    rawDatacenters.show(10, truncate = false)
+
 
     // Step 3: Load the power_costs data
     val powerSchema = new StructType()
@@ -71,6 +79,9 @@ object Main {
       .withColumn("Utility_ID", col("Utility_ID").cast("double").cast("int"))
       .withColumn("Customers", col("Customers").cast("double").cast("int"))
       .cache()
+    println(s"Loaded Power Costs: ${powerCosts.count()} rows")
+    println("Preview of powerCosts:")
+    powerCosts.show(10, truncate = false)
 
     // Step 4: Build panel of states x years
 

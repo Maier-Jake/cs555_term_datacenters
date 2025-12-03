@@ -26,7 +26,7 @@ object Test {
     // Load the saved model from the other file
     val model = RandomForestRegressionModel.load("hdfs:///results/model")
 
-    // Load the same saved dataset
+    // Load the saved dataset too
     val dc = spark.read.parquet("hdfs:///results/dcWithPrev")
     dc.printSchema()
 
@@ -37,7 +37,7 @@ object Test {
     val indexed = indexerModel.transform(dc)
     val encoded = encoderModel.transform(indexed)
 
-    // Now prepare my assembler
+    // Step 11: Assemble the model
     val assembler = new VectorAssembler()
       .setInputCols(Array("DC_Opened", "PrevPrice", "StateVec"))
       .setOutputCol("features")
@@ -65,11 +65,11 @@ object Test {
     }
 
     def renameScenario(df: DataFrame, name: String): DataFrame = {
-      df
-        .withColumnRenamed("DC_Opened", s"DC_$name")
+      df.withColumnRenamed("DC_Opened", s"DC_$name")
         .withColumnRenamed("prediction", s"Pred_$name")
     }
 
+    // run all the made up scenarios with scaled up/down data centers
     val scenarios = Seq(
       ("minus10", 0.90),
       ("plus10", 1.10),

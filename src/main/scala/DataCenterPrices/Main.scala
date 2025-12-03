@@ -130,6 +130,7 @@ object Main {
       .join(prices, Seq("State", "Year"), "left")
       .na.drop("any", Seq("Avg_kWh"))
 
+    // Step 8: One-hot encode the states
 
     // Some states are more expensive than others, don't let that sway the model...
     val stateIndexer = new StringIndexer()
@@ -140,12 +141,15 @@ object Main {
       .setInputCol("StateIndex")
       .setOutputCol("StateVec")
 
-    // I need to track the CHANGE in electricty price from 1 year to the next
+    // Step 9: Add the previous price as a data point for each row...
+
     val dcWithPrev = dcFull
       .withColumn("PrevPrice", lag("Avg_kWh", 1).over(w))
       .na.drop("any", Seq("PrevPrice"))
 
-    // If a datacenter hasn't opened in 3 years, drop the rows.
+    // Step 10: Reduce noise
+
+    // If a datacenter hasn't opened in 3 years, drop the rows. Helps reduce noise in the model...
     val threeYearWindow = Window
       .partitionBy("State")
       .orderBy("Year")
@@ -154,12 +158,12 @@ object Main {
       .withColumn("RecentOpenings", sum($"DC_Opened").over(threeYearWindow))
       .filter($"RecentOpenings" > 0) // keep only years where at least 1 DC opened in last 3 years
       .drop("RecentOpenings")
-
+    // gotta save this to use in the test scenarios file
+    dcFiltered.write.mode("overwrite").parquet("hdfs:///results/dcWithPrev")
     // println("Preview of dcWithPrev:")
     // dcWithPrev.show(40, truncate = false)
 
-    // gotta save this to use in my test file
-    dcFiltered.write.mode("overwrite").parquet("hdfs:///results/dcWithPrev")
+    // Step 11: Assemble the model
 
     val assembler = new VectorAssembler()
       .setInputCols(Array("DC_Opened", "PrevPrice", "StateVec"))
@@ -168,7 +172,7 @@ object Main {
     val indexed = stateIndexer.fit(dcFiltered).transform(dcFiltered)
     val encoded = stateEncoder.fit(indexed).transform(indexed)
 
-    // gotta save these to use in my test file
+    // gotta save this to use in the test scenarios file
     stateIndexer.fit(dcFiltered).write.overwrite().save("hdfs:///results/stateIndexer")
     stateEncoder.fit(indexed).write.overwrite().save("hdfs:///results/stateEncoder")
 
@@ -182,7 +186,7 @@ object Main {
 
     val Array(train, test) = dataframe.randomSplit(Array(0.8, 0.2), seed = 19)
 
-    // Train the model
+    // Step 12: Train the model
     println("Beginning training...")
 
     val rf = new RandomForestRegressor()
@@ -215,6 +219,8 @@ object Main {
 
     println("Training completed.")
 
+    // Step 13: Save the model for use in the test file
+
     // Get the best model
     val model = cvModel.bestModel.asInstanceOf[org.apache.spark.ml.regression.RandomForestRegressionModel]
 
@@ -227,12 +233,10 @@ object Main {
     // Evaluate on test set
     val predictions = model.transform(test)
 
-    val importances = model.featureImportances.toArray.mkString(", ")
     // Collect all log messages to write to hdfs
     val results = Seq(
       s"RMSE: ${evaluator.setMetricName("rmse").evaluate(predictions)}",
-      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}",
-      s"FeatureImportances: $importances"
+      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}"
     )
     spark.createDataset(results).coalesce(1)
       .write.mode("overwrite")

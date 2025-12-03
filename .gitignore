@@ -8,3 +8,7 @@ target/
 inputs/
 temp.scala
 project/
+
+**/_SUCCESS
+kaggle_fixed.csv
+results/

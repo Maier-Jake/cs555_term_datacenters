@@ -61,34 +61,34 @@ DC015,Google Data Center - Loudoun County,Google,Ashburn,VA,Appalachian Power Co
 DC003,Council Bluffs,Google,Council Bluffs,IA,MidAmerican Energy Co,41.2619,-95.8608,2020.0,9.0,175.0,Yes,Google Cloud Blog,https://cloud.google.com/blog/...,Campus expansion
 DC005,Reno Technology Park,Switch,Reno,NV,Nevada Power Co,39.5296,-119.8138,2020.0,11.0,250.0,Partial,News Article,https://renotahoetoday.com/...,Multi-tenant facility
 DC004,Redmond HQ Expansion,Microsoft,Redmond,WA,Puget Sound Energy Inc,47.674,-122.1215,2021.0,1.0,120.0,Yes,Microsoft News,https://news.microsoft.com/...,Azure capacity
-KAGGLE_001,Amazon - Ashburn,Amazon,Ashburn,VA,39.0215,-77.4579,,150,Dominion Energy Virginia
-KAGGLE_002,Amazon - Boardman,Amazon,Boardman,OR,45.8696,-119.688,,150,Pacific Power (PacifiCorp)
-KAGGLE_003,Amazon - Dublin,Amazon,Dublin,OH,40.1386,-83.0901,,150,AEP Ohio
-KAGGLE_004,Google - The Dalles,Google,The Dalles,OR,45.5946,-121.1787,2006,150,Pacific Power (PacifiCorp)
-KAGGLE_005,Google - Council Bluffs,Google,Council Bluffs,IA,41.2628,-95.8608,2009,200,MidAmerican Energy
-KAGGLE_006,Google - Lenoir,Google,Lenoir,NC,35.758,-81.5505,2007,150,Duke Energy Carolinas
-KAGGLE_007,Google - Berkeley County,Google,Berkeley County,SC,33.1239,-80.0373,2008,150,Santee Cooper
-KAGGLE_008,Microsoft - Boydton,Microsoft,Boydton,VA,36.6534,-78.3717,2010,150,Dominion Energy Virginia
-KAGGLE_009,Microsoft - Des Moines,Microsoft,Des Moines,IA,41.6342,-93.6443,2015,150,MidAmerican Energy
-KAGGLE_010,Microsoft - Quincy,Microsoft,Quincy,WA,47.3769,-119.6389,2007,150,Grant County PUD
-KAGGLE_011,Microsoft - San Antonio,Microsoft,San Antonio,TX,29.4997,-98.3992,2008,150,CPS Energy
-KAGGLE_012,Microsoft - Cheyenne,Microsoft,Cheyenne,WY,41.14,-104.8202,2013,100,Black Hills Energy
-KAGGLE_013,Microsoft - Chicago,Microsoft,Chicago,IL,41.8819,-87.6278,2015,150,Commonwealth Edison (ComEd)
-KAGGLE_014,Meta - Altoona,Meta,Altoona,IA,41.6392,-93.4758,2014,150,MidAmerican Energy
-KAGGLE_015,Meta - Prineville,Meta,Prineville,OR,44.1094,-120.5908,2011,150,Pacific Power (PacifiCorp)
-KAGGLE_016,Meta - Forest City,Meta,Forest City,NC,35.3343,-81.8656,2011,150,Duke Energy Carolinas
-KAGGLE_017,Meta - Fort Worth,Meta,Fort Worth,TX,32.7357,-97.4344,2017,200,Oncor Electric Delivery
-KAGGLE_018,Meta - Los Lunas,Meta,Los Lunas,NM,34.743,-106.7334,2019,150,Public Service Company of New Mexico (PNM)
-KAGGLE_019,Meta - Papillion,Meta,Papillion,NE,41.1544,-96.0419,2020,150,Omaha Public Power District (OPPD)
-KAGGLE_020,Meta - Henrico County,Meta,Henrico County,VA,37.5129,-77.32,2020,200,Dominion Energy Virginia
-KAGGLE_021,Apple - Maiden,Apple,Maiden,NC,35.6543,-81.218,2010,100,Duke Energy Carolinas
-KAGGLE_022,Apple - Newark,Apple,Newark,CA,37.529,-122.0446,,100,Pacific Gas & Electric (PG&E)
-KAGGLE_023,IBM - Dallas,IBM,Dallas,TX,32.7767,-96.797,,100,Oncor Electric Delivery
-KAGGLE_024,Oracle - Ashburn,Oracle,Ashburn,VA,39.0215,-77.4579,,100,Dominion Energy Virginia
-KAGGLE_025,Oracle - Phoenix,Oracle,Phoenix,AZ,33.4484,-112.074,,100,Arizona Public Service (APS) or Salt River Project (SRP)
-KAGGLE_026,Equinix - Ashburn,Equinix,Ashburn,VA,39.0215,-77.4579,,80,Dominion Energy Virginia
-KAGGLE_027,Equinix - Chicago,Equinix,Chicago,IL,41.8781,-87.6298,,80,Commonwealth Edison (ComEd)
-KAGGLE_028,Equinix - Dallas,Equinix,Dallas,TX,32.7767,-96.797,,80,Oncor Electric Delivery
-KAGGLE_029,Equinix - Los Angeles,Equinix,Los Angeles,CA,34.0522,-118.2437,,80,Los Angeles Department of Water and Power (LADWP)
-KAGGLE_030,Equinix - New York City,Equinix,New York City,NY,40.7128,-74.006,,80,Consolidated Edison (ConEd)
-KAGGLE_031,Equinix - Seattle,Equinix,Seattle,WA,47.6062,-122.3321,,80,Seattle City Light
+KAGGLE_001,Amazon - Ashburn,Amazon,Ashburn,VA,Dominion Energy Virginia,39.0215,-77.4579,,,150,,,,
+KAGGLE_002,Amazon - Boardman,Amazon,Boardman,OR,Pacific Power (PacifiCorp),45.8696,-119.688,,,150,,,,
+KAGGLE_003,Amazon - Dublin,Amazon,Dublin,OH,AEP Ohio,40.1386,-83.0901,,,150,,,,
+KAGGLE_004,Google - The Dalles,Google,The Dalles,OR,Pacific Power (PacifiCorp),45.5946,-121.1787,2006,,150,,,,
+KAGGLE_005,Google - Council Bluffs,Google,Council Bluffs,IA,MidAmerican Energy,41.2628,-95.8608,2009,,200,,,,
+KAGGLE_006,Google - Lenoir,Google,Lenoir,NC,Duke Energy Carolinas,35.758,-81.5505,2007,,150,,,,
+KAGGLE_007,Google - Berkeley County,Google,Berkeley County,SC,Santee Cooper,33.1239,-80.0373,2008,,150,,,,
+KAGGLE_008,Microsoft - Boydton,Microsoft,Boydton,VA,Dominion Energy Virginia,36.6534,-78.3717,2010,,150,,,,
+KAGGLE_009,Microsoft - Des Moines,Microsoft,Des Moines,IA,MidAmerican Energy,41.6342,-93.6443,2015,,150,,,,
+KAGGLE_010,Microsoft - Quincy,Microsoft,Quincy,WA,Grant County PUD,47.3769,-119.6389,2007,,150,,,,
+KAGGLE_011,Microsoft - San Antonio,Microsoft,San Antonio,TX,CPS Energy,29.4997,-98.3992,2008,,150,,,,
+KAGGLE_012,Microsoft - Cheyenne,Microsoft,Cheyenne,WY,Black Hills Energy,41.14,-104.8202,2013,,100,,,,
+KAGGLE_013,Microsoft - Chicago,Microsoft,Chicago,IL,Commonwealth Edison (ComEd),41.8819,-87.6278,2015,,150,,,,
+KAGGLE_014,Meta - Altoona,Meta,Altoona,IA,MidAmerican Energy,41.6392,-93.4758,2014,,150,,,,
+KAGGLE_015,Meta - Prineville,Meta,Prineville,OR,Pacific Power (PacifiCorp),44.1094,-120.5908,2011,,150,,,,
+KAGGLE_016,Meta - Forest City,Meta,Forest City,NC,Duke Energy Carolinas,35.3343,-81.8656,2011,,150,,,,
+KAGGLE_017,Meta - Fort Worth,Meta,Fort Worth,TX,Oncor Electric Delivery,32.7357,-97.4344,2017,,200,,,,
+KAGGLE_018,Meta - Los Lunas,Meta,Los Lunas,NM,Public Service Company of New Mexico (PNM),34.743,-106.7334,2019,,150,,,,
+KAGGLE_019,Meta - Papillion,Meta,Papillion,NE,Omaha Public Power District (OPPD),41.1544,-96.0419,2020,,150,,,,
+KAGGLE_020,Meta - Henrico County,Meta,Henrico County,VA,Dominion Energy Virginia,37.5129,-77.32,2020,,200,,,,
+KAGGLE_021,Apple - Maiden,Apple,Maiden,NC,Duke Energy Carolinas,35.6543,-81.218,2010,,100,,,,
+KAGGLE_022,Apple - Newark,Apple,Newark,CA,Pacific Gas & Electric (PG&E),37.529,-122.0446,,,100,,,,
+KAGGLE_023,IBM - Dallas,IBM,Dallas,TX,Oncor Electric Delivery,32.7767,-96.797,,,100,,,,
+KAGGLE_024,Oracle - Ashburn,Oracle,Ashburn,VA,Dominion Energy Virginia,39.0215,-77.4579,,,100,,,,
+KAGGLE_025,Oracle - Phoenix,Oracle,Phoenix,AZ,Arizona Public Service (APS) or Salt River Project (SRP),33.4484,-112.074,,,100,,,,
+KAGGLE_026,Equinix - Ashburn,Equinix,Ashburn,VA,Dominion Energy Virginia,39.0215,-77.4579,,,80,,,,
+KAGGLE_027,Equinix - Chicago,Equinix,Chicago,IL,Commonwealth Edison (ComEd),41.8781,-87.6298,,,80,,,,
+KAGGLE_028,Equinix - Dallas,Equinix,Dallas,TX,Oncor Electric Delivery,32.7767,-96.797,,,80,,,,
+KAGGLE_029,Equinix - Los Angeles,Equinix,Los Angeles,CA,Los Angeles Department of Water and Power (LADWP),34.0522,-118.2437,,,80,,,,
+KAGGLE_030,Equinix - New York City,Equinix,New York City,NY,Consolidated Edison (ConEd),40.7128,-74.006,,,80,,,,
+KAGGLE_031,Equinix - Seattle,Equinix,Seattle,WA,Seattle City Light,47.6062,-122.3321,,,80,,,,

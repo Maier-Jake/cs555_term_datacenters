@@ -5,9 +5,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.regression.DecisionTreeRegressor
-
+import org.apache.spark.ml.feature.{StringIndexer, OneHotEncoder, VectorAssembler}
+import org.apache.spark.ml.regression.RandomForestRegressor
+import org.apache.spark.ml.tuning.{ParamGridBuilder, CrossValidator}
 object Main {
   def main(args: Array[String]): Unit = {
     // Step 1: Create Spark session
@@ -45,9 +45,9 @@ object Main {
       .withColumn("Opening_Month", $"Opening_Month".cast("int"))
       .drop("Notes", "Source_URL", "Data_Source", "Verified",
         "Opening_Month", "Latitude", "Longitude")
-    println(s"Loaded Data Centers: ${rawDatacenters.count()} rows")
-    println("Preview of rawDatacenters:")
-    rawDatacenters.show(10, truncate = false)
+    // println(s"Loaded Data Centers: ${rawDatacenters.count()} rows")
+    // println("Preview of rawDatacenters:")
+    // rawDatacenters.show(10, truncate = false)
 
     // Step 3: Load the power_costs data
     val powerSchema = new StructType()
@@ -65,7 +65,6 @@ object Main {
       .schema(powerSchema)
       .csv(args(0) + "/cleaned_eia_years" + "/power_cost_*.csv")
       .filter($"Customers" > 400 && $"Sales_MWh" > 400)
-      .drop("Revenue_Thousands", "Sales_MWh")
       /* require that we have atleast a decent sized utility, 
        * I noticed that we had repeats because some EIA data splits utility companies per 
        * customer class but that split is not defined in the data */
@@ -73,10 +72,11 @@ object Main {
       .filter(!$"Utility_ID".isin("99999.0", "88888.0", "77777.0"))
       .withColumn("Utility_ID", col("Utility_ID").cast("double").cast("int"))
       .withColumn("Customers", col("Customers").cast("double").cast("int"))
+      .drop("Revenue_Thousands", "Sales_MWh")
       .cache()
-    println(s"Loaded Power Costs: ${powerCosts.count()} rows")
-    println("Preview of powerCosts:")
-    powerCosts.show(10, truncate = false)
+    // println(s"Loaded Power Costs: ${powerCosts.count()} rows")
+    // println("Preview of powerCosts:")
+    // powerCosts.show(10, truncate = false)
 
     // Step 4: Build panel of states x years
 
@@ -96,30 +96,28 @@ object Main {
       .groupBy("State")
       .agg(
         count("*").alias("Pre_DC"),
-        sum("Capacity_MW").alias("Pre_MW")
       )
 
+    // datacenters DURING the period I've got price data...
     val byYear = rawDatacenters
       .filter($"Opening_Year" >= minYear)
       .groupBy("State", "Opening_Year")
       .agg(
         count("*").alias("DC_Opened"),
-        sum("Capacity_MW").alias("MW_Added")
       )
       .withColumnRenamed("Opening_Year", "Year")
 
-    // println("Preview of byYear:")
-    // byYear.show(20, truncate = false)
+    println("Preview of byYear:")
+    byYear.show(20, truncate = false)
 
     val w = Window.partitionBy("State").orderBy("Year")
-    val dcJoinedAndCum = stateYearGrid
+    val cumulativeDatacenters = stateYearGrid
       .join(byYear, Seq("State", "Year"), "left")
-      .na.fill(0, Seq("DC_Opened", "MW_Added"))
+      .na.fill(0, Seq("DC_Opened"))
       .join(prePeriod, Seq("State"), "left")
-      .na.fill(0, Seq("Pre_DC", "Pre_MW"))
-      .withColumn("Cum_DC", $"Pre_DC" + sum($"DC_Opened").over(w))
-      .withColumn("Cum_MW", $"Pre_MW" + sum($"MW_Added").over(w))
-      .drop("Pre_DC", "Pre_MW", "DC_Opened", "MW_Added")
+      .na.fill(0, Seq("Pre_DC"))
+      .withColumn("Cumulative_DC", $"Pre_DC" + sum($"DC_Opened").over(w))
+      .drop("Pre_DC")
 
     // Step 7: Add avg electricity prices
 
@@ -127,60 +125,115 @@ object Main {
       .groupBy("State", "Year")
       .agg(avg("Price_Per_kWh").alias("Avg_kWh"))
 
-    val dcFull = dcJoinedAndCum
+    // avg prices now added to my datacenters
+    val dcFull = cumulativeDatacenters
       .join(prices, Seq("State", "Year"), "left")
       .na.drop("any", Seq("Avg_kWh"))
 
-    println("Preview of dcFull:")
-    dcFull.show(20, truncate = false)
+
+    // Some states are more expensive than others, don't let that sway the model...
+    val stateIndexer = new StringIndexer()
+      .setInputCol("State")
+      .setOutputCol("StateIndex")
+      .setHandleInvalid("keep")
+    val stateEncoder = new OneHotEncoder()
+      .setInputCol("StateIndex")
+      .setOutputCol("StateVec")
+
+    // I need to track the CHANGE in electricty price from 1 year to the next
+    val dcWithPrev = dcFull
+      .withColumn("PrevPrice", lag("Avg_kWh", 1).over(w))
+      .na.drop("any", Seq("PrevPrice"))
+
+    // If a datacenter hasn't opened in 3 years, drop the rows.
+    val threeYearWindow = Window
+      .partitionBy("State")
+      .orderBy("Year")
+      .rowsBetween(-3, 1)
+    val dcFiltered = dcWithPrev
+      .withColumn("RecentOpenings", sum($"DC_Opened").over(threeYearWindow))
+      .filter($"RecentOpenings" > 0) // keep only years where at least 1 DC opened in last 3 years
+      .drop("RecentOpenings")
+
+    // println("Preview of dcWithPrev:")
+    // dcWithPrev.show(40, truncate = false)
+
+    // gotta save this to use in my test file
+    dcFiltered.write.mode("overwrite").parquet("hdfs:///results/dcWithPrev")
 
     val assembler = new VectorAssembler()
-      .setInputCols(Array("Cum_DC", "Cum_MW"))
+      .setInputCols(Array("DC_Opened", "PrevPrice", "StateVec"))
       .setOutputCol("features")
 
-    val mlDF = assembler.transform(dcFull)
+    val indexed = stateIndexer.fit(dcFiltered).transform(dcFiltered)
+    val encoded = stateEncoder.fit(indexed).transform(indexed)
+
+    // gotta save these to use in my test file
+    stateIndexer.fit(dcFiltered).write.overwrite().save("hdfs:///results/stateIndexer")
+    stateEncoder.fit(indexed).write.overwrite().save("hdfs:///results/stateEncoder")
+
+    println("Preview of encoded:")
+    encoded.show(40, truncate = false)
+
+    // dataframe for the model
+    val dataframe = assembler.transform(encoded)
       .select("features", "Avg_kWh")
       .withColumnRenamed("Avg_kWh", "label")
 
-    val mlSafeDF = mlDF.coalesce(4).cache().na.fill(0)
-    val Array(train, test) = mlSafeDF.randomSplit(Array(0.8, 0.2), seed = 19)
+    val Array(train, test) = dataframe.randomSplit(Array(0.8, 0.2), seed = 19)
 
     // Train the model
     println("Beginning training...")
 
-    val dt = new DecisionTreeRegressor()
+    val rf = new RandomForestRegressor()
       .setFeaturesCol("features")
       .setLabelCol("label")
-      .setMaxDepth(5)
+      .setNumTrees(200)
+      .setMaxDepth(8)
       .setMinInstancesPerNode(5)
+      .setSubsamplingRate(1.0)
 
-    val model = dt.fit(train)
+    // Hyper-parameter tuning, this is fine because we have a tiny dataset.
+    val paramGrid = new ParamGridBuilder()
+      .addGrid(rf.numTrees, Array(100, 200, 300))
+      .addGrid(rf.maxDepth, Array(4, 6, 8))
+      .build()
+
+    val evaluator = new RegressionEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+      .setMetricName("rmse")
+
+    // For the hyper-parameter tuning
+    val cv = new CrossValidator()
+      .setEstimator(rf)
+      .setEvaluator(evaluator)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(4)
+
+    val cvModel = cv.fit(train)
+
     println("Training completed.")
 
-    println(s"Max Depth: ${model.getMaxDepth}")
-    println(s"Num Nodes: ${model.numNodes}")
+    // Get the best model
+    val model = cvModel.bestModel.asInstanceOf[org.apache.spark.ml.regression.RandomForestRegressionModel]
 
     // Save the model to hdfs
     val modelOutputPath = "hdfs:///results/model"
     model.write.overwrite().save(modelOutputPath)
     println(s"Saved model to $modelOutputPath")
     // val loaded = DecisionTreeRegressionModel.load("hdfs:///results/model")
-    
+
     // Evaluate on test set
     val predictions = model.transform(test)
 
-    val evaluator = new RegressionEvaluator()
-      .setLabelCol("label")
-      .setPredictionCol("prediction")
-
+    val importances = model.featureImportances.toArray.mkString(", ")
     // Collect all log messages to write to hdfs
     val results = Seq(
-      s"Max Depth: ${model.getMaxDepth}",
-      s"Num Nodes: ${model.numNodes}",
       s"RMSE: ${evaluator.setMetricName("rmse").evaluate(predictions)}",
-      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}"
+      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}",
+      s"FeatureImportances: $importances"
     )
-    // Convert to DF and save to HDFS
     spark.createDataset(results).coalesce(1)
       .write.mode("overwrite")
       .text("hdfs:///results/run_logs")

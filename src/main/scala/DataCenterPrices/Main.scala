@@ -6,16 +6,12 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.regression.GBTRegressor
+import org.apache.spark.ml.regression.DecisionTreeRegressor
 
 object Main {
   def main(args: Array[String]): Unit = {
     // Step 1: Create Spark session
-    // val spark = SparkSession.builder.appName("Impact of Data Centers on Residential Electricity Prices").getOrCreate()
-    val spark = SparkSession.builder().appName("Impact of Data Centers on Residential Electricity Prices")
-      .config("spark.executor.extraJavaOptions", "-Dlog4j.configuration=log4j2.properties")
-      .config("spark.driver.extraJavaOptions", "-Dlog4j.configuration=log4j2.properties")
-      .getOrCreate()
+    val spark = SparkSession.builder().appName("Impact of Data Centers on Residential Electricity Prices").getOrCreate()
 
     spark.sparkContext.setLogLevel("INFO")
     println("Log level set to INFO")
@@ -52,7 +48,6 @@ object Main {
     println(s"Loaded Data Centers: ${rawDatacenters.count()} rows")
     println("Preview of rawDatacenters:")
     rawDatacenters.show(10, truncate = false)
-
 
     // Step 3: Load the power_costs data
     val powerSchema = new StructType()
@@ -139,28 +134,59 @@ object Main {
     println("Preview of dcFull:")
     dcFull.show(20, truncate = false)
 
-    // Save the data to a csv
-    dcFull
-      .coalesce(1) // single CSV
-      .write
-      .option("header", "true")
-      .mode("overwrite")
-      .csv("dcFull_export")
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("Cum_DC", "Cum_MW"))
+      .setOutputCol("features")
 
-    println("=== EXPECTED GRID DIMENSIONS ===")
-    val S = states.count()
-    val Y = years.count()
-    println(s"States with datacenters: $S")
-    println(s"Years with price data: $Y")
-    println(s"State × Year grid size: ${S * Y}")
+    val mlDF = assembler.transform(dcFull)
+      .select("features", "Avg_kWh")
+      .withColumnRenamed("Avg_kWh", "label")
 
-    val pricePairs = prices.select("State","Year").distinct().count()
-    println(s"Distinct (State,Year) with electricity prices: $pricePairs")
+    val mlSafeDF = mlDF.coalesce(4).cache().na.fill(0)
+    val Array(train, test) = mlSafeDF.randomSplit(Array(0.8, 0.2), seed = 19)
 
-    val fullCount = dcFull.count()
-    println(s"Final dcFull row count: $fullCount")
-    println("================================")
+    // Train the model
+    println("Beginning training...")
 
+    val dt = new DecisionTreeRegressor()
+      .setFeaturesCol("features")
+      .setLabelCol("label")
+      .setMaxDepth(5)
+      .setMinInstancesPerNode(5)
+
+    val model = dt.fit(train)
+    println("Training completed.")
+
+    println(s"Max Depth: ${model.getMaxDepth}")
+    println(s"Num Nodes: ${model.numNodes}")
+
+    // Save the model to hdfs
+    val modelOutputPath = "hdfs:///results/model"
+    model.write.overwrite().save(modelOutputPath)
+    println(s"Saved model to $modelOutputPath")
+    // val loaded = DecisionTreeRegressionModel.load("hdfs:///datacenter_model_output/dt_model")
+    
+    // Evaluate on test set
+    val predictions = model.transform(test)
+
+    val evaluator = new RegressionEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+
+    println("RMSE: " + evaluator.setMetricName("rmse").evaluate(predictions))
+    println("R2:   " + evaluator.setMetricName("r2").evaluate(predictions))
+
+    // Collect all log messages to write to hdfs
+    val results = Seq(
+      s"Max Depth: ${model.getMaxDepth}",
+      s"Num Nodes: ${model.numNodes}",
+      s"RMSE: ${evaluator.setMetricName("rmse").evaluate(predictions)}",
+      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}"
+    )
+    // Convert to DF and save to HDFS
+    spark.createDataset(results).coalesce(1)
+      .write.mode("overwrite")
+      .text("hdfs:///datacenter_model_output/run_logs")
 
     spark.stop()
 

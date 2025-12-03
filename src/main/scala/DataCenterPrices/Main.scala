@@ -164,7 +164,7 @@ object Main {
     val modelOutputPath = "hdfs:///results/model"
     model.write.overwrite().save(modelOutputPath)
     println(s"Saved model to $modelOutputPath")
-    // val loaded = DecisionTreeRegressionModel.load("hdfs:///datacenter_model_output/dt_model")
+    // val loaded = DecisionTreeRegressionModel.load("hdfs:///results/model")
     
     // Evaluate on test set
     val predictions = model.transform(test)
@@ -172,9 +172,6 @@ object Main {
     val evaluator = new RegressionEvaluator()
       .setLabelCol("label")
       .setPredictionCol("prediction")
-
-    println("RMSE: " + evaluator.setMetricName("rmse").evaluate(predictions))
-    println("R2:   " + evaluator.setMetricName("r2").evaluate(predictions))
 
     // Collect all log messages to write to hdfs
     val results = Seq(
@@ -186,7 +183,8 @@ object Main {
     // Convert to DF and save to HDFS
     spark.createDataset(results).coalesce(1)
       .write.mode("overwrite")
-      .text("hdfs:///datacenter_model_output/run_logs")
+      .text("hdfs:///results/run_logs")
+    println("Saved run logs to hdfs:///results/run_logs")
 
     spark.stop()
 

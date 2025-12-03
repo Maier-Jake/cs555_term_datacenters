@@ -13,6 +13,17 @@ SALES_COLUMN = "Sales_MWh"
 STATE_COLUMN = "State"
 YEAR_COLUMN = "Year"
 
+REQUIRED_COLUMNS = [
+    UTILITY_ID_COLUMN,
+    UTILITY_NAME_COLUMN,
+    STATE_COLUMN,
+    YEAR_COLUMN,
+    REVENUE_COLUMN,
+    SALES_COLUMN,
+    CUSTOMER_COLUMN,
+    PRICE_COLUMN
+]
+
 def process_file(input_file, output_dir='.', min_customers=0):
     """Processes an EIA-861 file"""
 
@@ -72,7 +83,8 @@ def process_file(input_file, output_dir='.', min_customers=0):
     print("Saving complete: Preview:")
     preview_cols = ['Utility_Name', 'State', 'Year', 'Price_Per_kWh']
     available_preview = [col for col in preview_cols if col in df_clean.columns]
-    print(df_clean[available_preview].head().to_string(index=False))
+    if available_preview:
+        print(df_clean[available_preview].head().to_string(index=False))
 
     return True
 
@@ -152,19 +164,54 @@ def clean_data(df, year):
 
     df_clean = df[list(column_map.keys())].copy()
     df_clean = df_clean.rename(columns=column_map)
-    df_clean['Year'] = year
 
-    number_cols = ['Revenue_Thousands', 'Sales_MWh', 'Customers']
-    for col in number_cols:
-        df_clean[col] = pd.to_numeric(df_clean[col], errors='coerce')
-
-    if 'Revenue_Thousands' in df_clean.columns and 'Sales_MWh' in df_clean.columns:
-        df_clean['Price_Per_kWh'] = (df_clean['Revenue_Thousands'] * 1000) / (df_clean['Sales_MWh'] * 1000)
-
-    df_clean['Utility_Name'] = df_clean['Utility_Name'].astype(str).str.strip()
-    df_clean['State'] = df_clean['State'].astype(str).str.strip().str.upper()
+    df_clean = normalize(df_clean, year)
 
     return df_clean
+
+
+def normalize(df, year):
+    print(f"    Normalizing...")
+
+    df[YEAR_COLUMN] = year
+
+    for col in REQUIRED_COLUMNS:
+        if col not in df.columns:
+            print(f"    WARNING: Missing {col}, adding with null values")
+            df[col] = None
+
+
+    numeric_cols = [REVENUE_COLUMN, SALES_COLUMN, CUSTOMER_COLUMN]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    if REVENUE_COLUMN in df.columns and SALES_COLUMN in df.columns:
+        has_revenue = df[REVENUE_COLUMN].notna().any()
+        has_sales = df[SALES_COLUMN].notna().any()
+
+        if has_revenue and has_sales:
+            df[PRICE_COLUMN] = df[REVENUE_COLUMN] / df[SALES_COLUMN]
+            print(f"    Calculated prices: {PRICE_COLUMN}")
+        else:
+            df[PRICE_COLUMN] = None
+            print(f"    WARNING: Cannot calculate price")
+    else:
+        df[PRICE_COLUMN] = None
+        print(f"    WARNING: Cannot calculate price (missing columns)")
+
+    if UTILITY_NAME_COLUMN in df.columns:
+        df[UTILITY_NAME_COLUMN] = df[UTILITY_NAME_COLUMN].astype(str).str.strip()
+
+    if STATE_COLUMN in df.columns:
+        df[STATE_COLUMN] = df[STATE_COLUMN].astype(str).str.strip().str.upper()
+
+    # Reorder columns
+    df = df[REQUIRED_COLUMNS]
+
+    print(f"    Output: {len(df)} rows with {len(df.columns)} columns")
+
+    return df
 
 
 def remove_entries_with_too_few_customers(df, min_customers=0):

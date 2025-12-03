@@ -139,47 +139,28 @@ object Main {
     println("Preview of dcFull:")
     dcFull.show(20, truncate = false)
 
-    val stripped = dcFull
-      .select(
-        $"State",
-        $"Year",
-        $"Cum_DC".cast("double"),
-        $"Cum_MW".cast("double"),
-        $"Avg_kWh".cast("double")
-      )
+    // Save the data to a csv
+    dcFull
+      .coalesce(1) // single CSV
+      .write
+      .option("header", "true")
+      .mode("overwrite")
+      .csv("dcFull_export")
 
-    // Train a gradient boosted regression tree model
-    val assembler = new VectorAssembler()
-      .setInputCols(Array("Cum_DC", "Cum_MW"))
-      .setOutputCol("features")
+    println("=== EXPECTED GRID DIMENSIONS ===")
+    val S = states.count()
+    val Y = years.count()
+    println(s"States with datacenters: $S")
+    println(s"Years with price data: $Y")
+    println(s"State × Year grid size: ${S * Y}")
 
-    val mlDF = assembler.transform(stripped)
-      .select("features", "Avg_kWh")
-      .withColumnRenamed("Avg_kWh", "label")
+    val pricePairs = prices.select("State","Year").distinct().count()
+    println(s"Distinct (State,Year) with electricity prices: $pricePairs")
 
-    println("Sample features row:")
-    // mlDF.select("features","label").show(5, truncate=false)
-    val mlSafeDF = mlDF.coalesce(4).cache().na.fill(0)
-    val Array(train, test) = mlSafeDF.randomSplit(Array(0.8, 0.2), seed = 19)
+    val fullCount = dcFull.count()
+    println(s"Final dcFull row count: $fullCount")
+    println("================================")
 
-    val gbt = new GBTRegressor()
-      .setLabelCol("label")
-      .setFeaturesCol("features")
-      .setMaxIter(200)
-      .setMaxDepth(5)
-
-    println("Beginning training...")
-    val model = gbt.fit(train)
-    println("Training completed.")
-
-    val predictions = model.transform(test)
-
-    val evaluator = new RegressionEvaluator()
-      .setLabelCol("label")
-      .setPredictionCol("prediction")
-
-    println("RMSE: " + evaluator.setMetricName("rmse").evaluate(predictions))
-    println("R2:   " + evaluator.setMetricName("r2").evaluate(predictions))
 
     spark.stop()
 

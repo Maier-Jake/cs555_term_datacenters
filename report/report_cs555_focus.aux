@@ -1,0 +1,72 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Problem Statement}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Dominant Approaches to the Problem}{1}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{1}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Data Sources}{1}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Distributed Data Processing Pipeline}{1}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Local Data Preprocessing}{1}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}HDFS Data Processing}{2}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Temporal Grid Construction}{2}{subsubsection.3.2.3}\protected@file@percent }
+\newlabel{lst:grid}{{1}{2}{Complete Temporal Grid Construction}{lstlisting.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Complete Temporal Grid Construction}}{2}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.4}Cumulative Data Center Count}{3}{subsubsection.3.2.4}\protected@file@percent }
+\newlabel{lst:cumulative}{{2}{3}{Cumulative Data Center Aggregation}{lstlisting.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces Cumulative Data Center Aggregation}}{3}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Window Functions:}{3}{lstnumber.2.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Join Strategy:}{4}{lstnumber.2.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.5}Electricity Price Integration}{4}{subsubsection.3.2.5}\protected@file@percent }
+\newlabel{lst:prices}{{3}{4}{Price Data Integration}{lstlisting.3}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Price Data Integration}}{4}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.6}Advanced Feature Engineering}{5}{subsubsection.3.2.6}\protected@file@percent }
+\newlabel{lst:encoding}{{4}{5}{State Categorical Encoding}{lstlisting.4}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces State Categorical Encoding}}{5}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Temporal Lag Features:}{5}{lstnumber.4.10}\protected@file@percent }
+\newlabel{lst:lag}{{5}{5}{Lagged Price Feature}{lstlisting.5}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}{\ignorespaces Lagged Price Feature}}{5}{lstlisting.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.7}Final Dataset Schema}{6}{subsubsection.3.2.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Final Spark Dataset Schema\relax }}{6}{table.caption.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.8}Pipeline Execution Summary}{6}{subsubsection.3.2.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Machine Learning Implementation}{7}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Distributed Evaluation}{8}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Benchmarks}{9}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Model Performance}{9}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Decision Tree model performance on held-out test set (48 observations, 20\% of data)\relax }}{9}{table.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Regional Case Study: Arizona}{9}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Arizona electricity prices (2014--2022) with counterfactual scenarios showing different data center growth assumptions. The black line represents actual observed prices. The divergence between actual and baseline scenarios after 2019 is suggestive of data center impact, though other factors cannot be ruled out, this visualization demonstrates a positive correlation between number of data centers and electricity prices.\relax }}{10}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:arizona}{{1}{10}{Arizona electricity prices (2014--2022) with counterfactual scenarios showing different data center growth assumptions. The black line represents actual observed prices. The divergence between actual and baseline scenarios after 2019 is suggestive of data center impact, though other factors cannot be ruled out, this visualization demonstrates a positive correlation between number of data centers and electricity prices.\relax }{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Insights Gleaned}{10}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Distributed Systems Insights}{10}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Application Insights}{10}{subsection.5.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Compares electricity prices in two 'high' data center states (California and Texas) against a 'low' data center state (Wyoming) and demonstrates the cost of electricity is growing significantly faster in these 'high' data center states.\relax }}{11}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:highvslow}{{2}{11}{Compares electricity prices in two 'high' data center states (California and Texas) against a 'low' data center state (Wyoming) and demonstrates the cost of electricity is growing significantly faster in these 'high' data center states.\relax }{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}How the Problem Space Will Look in the Future}{11}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusions}{11}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Model Results Summary}{11}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Future Work}{12}{subsection.7.2}\protected@file@percent }
+\bibcite{angrist2009}{1}
+\bibcite{bellemare2015}{2}
+\bibcite{cohen1988}{3}
+\bibcite{dean2004}{4}
+\bibcite{eia2024}{5}
+\bibcite{jones2018}{6}
+\bibcite{kaggle2023}{7}
+\bibcite{masanet2020}{8}
+\bibcite{zaharia2016}{9}
+\@writefile{toc}{\contentsline {section}{References}{13}{subsection.7.2}\protected@file@percent }
+\gdef \@abspage@last{16}

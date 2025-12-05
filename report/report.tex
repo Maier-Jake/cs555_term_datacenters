@@ -1,0 +1,618 @@
+\documentclass[12pt,letterpaper]{article}us% ===========================
+% PACKAGES
+% ===========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ===========================
+% HYPERREF SETUP
+% ===========================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=blue,
+    pdftitle={Do AI Data Centers Increase Residential Electricity Prices?},
+    pdfauthor={Jake Maier, Eric Kearney},
+    pdfsubject={CS555 Distributed Systems Term Project},
+    pdfkeywords={distributed systems, Apache Spark, machine learning, data centers, electricity prices}
+}
+
+% ===========================
+% CODE LISTING SETUP
+% ===========================
+\lstset{
+    language=Scala,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)}
+}
+
+% ===========================
+% HEADER/FOOTER
+% ===========================
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CS555 Term Project}
+\lhead{Maier \& Kearney}
+\rfoot{Page \thepage}
+
+% ===========================
+% SECTION FORMATTING
+% ===========================
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+% ===========================
+% SPACING
+% ===========================
+\onehalfspacing
+
+% ===========================
+% TITLE PAGE INFO
+% ===========================
+\title{
+    \vspace{1in}
+    \textbf{\LARGE Do AI Data Centers Increase Residential Electricity Prices?}\\
+    \vspace{0.5in}
+    \large A Distributed Systems Approach to Energy Economics\\
+    \vspace{1in}
+    \normalsize CS555 Distributed Systems - Fall 2025\\
+    Term Project Report
+    \vspace{1in}
+}
+
+\author{
+    \textbf{Jake Maier}\\
+    \textit{Colorado State University}\\
+    \texttt{jake.maier@colostate.edu}
+    \and
+    \textbf{Eric Kearney}\\
+    \textit{Colorado State University}\\
+    \texttt{eric.kearney@colostate.edu}
+}
+
+\date{December 2025}
+
+% ===========================
+% DOCUMENT BEGIN
+% ===========================
+\begin{document}
+
+% TITLE PAGE
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% ABSTRACT
+\begin{abstract}
+\noindent
+This project investigates whether the rapid expansion of AI data centers
+(2015--2024) has driven up residential electricity prices in affected regions
+using distributed machine learning on Apache Spark. We compiled a dataset of 93
+data centers across 20 US states and matched them with utility-level electricity
+pricing data from the U.S. Energy Information Administration, creating a
+240-observation panel dataset. Using an 8-machine Spark cluster, we implemented
+a Decision Tree model to assess the relationship between data center presence
+and electricity prices.
+
+Our Decision Tree model achieved RMSE = \$0.0153/kWh with $R^2 = 0.177$ (17.7\%
+		variance explained), consistent with economics literature for
+cross-sectional single-factor models.
+
+Our findings suggest that data centers have a minor/moderate positive
+correlation with increasing residential electricity prices.
+\newpage
+
+% TABLE OF CONTENTS
+\tableofcontents
+\newpage
+
+% START PAGE NUMBERING
+\setcounter{page}{1}
+
+% ===========================
+% 1. INTRODUCTION
+% ===========================
+\section{Introduction}
+
+\subsection{Motivation and Context}
+
+The explosion in Artificial Intelligence has brought with it an unprecedented
+demand for increased computational infrastructure. Large technology companies
+(e.g., Amazon, Google, Meta, Microsoft) have constructed hundreds of massive
+data centers across the United States, with many more data center construction
+projects currently underway.
+
+This expansion has risen the question in the mind of analysts, investigative
+journalists, and the people living near these data centers: \textbf{Are these
+	power-hungry facilities driving up electricity costs for nearby residents?}
+
+The question matters for several reasons:
+
+\textbf{Economic Justice:} Rising energy costs disproportionately burden
+low-income families. If data centers contribute to price increases, AI
+advancement would be subsidized by vulnerable residential customers who have no
+negotiating power with utilities and would likely gain little-to-none of the
+gains associated with said advancement.
+
+\textbf{Policy and Planning:} State and local governments face increasing
+pressure to approve or deny data center development. Policymakers need
+empirical evidence to inform zoning decisions, tax incentives, and
+infrastructure planning.
+
+\textbf{Climate Accountability:} Understanding the \textit{full cost} of AI
+infrastructure includes impacts on surrounding communities. If data centers
+rapidly increase residential electricity consumption and thus drive utilities
+toward fossil fuel generation to quickly meet the growing demand, the climate
+implications extend beyond direct facility emissions.
+
+\textbf{Utility System Planning:} Electric utilities must balance competing
+demands: accommodating large industrial customers (data centers) while
+maintaining reliable, affordable service for residential customers.
+Understanding price impacts helps utilities design appropriate rate structures
+and investment strategies.
+
+\subsection{Research Questions}
+
+\textbf{Primary Research Question:} Do AI data centers increase residential
+electricity prices in their host utility service areas?
+
+\textbf{Specific Hypotheses:}
+\begin{itemize}
+    \item \textbf{H1:} States with more data centers exhibit higher electricity price growth rates
+    \item \textbf{H2:} The magnitude of impact increases with cumulative data center capacity (megawatts)
+    \item \textbf{H3:} Price effects are detectable in the years following data center openings
+    \item \textbf{H4:} Effects vary by region (i.e., a 100MW data center opened
+			in a place like northern Virginia won't necessarily have the same
+			impact on residential electricity prices as a 100MW data center
+			opened in a place like rural Iowa)
+\end{itemize}
+
+\textbf{Research Design:} We employ a panel data approach, tracking 20 states
+over 10 years, comparing price trends in states that received data centers to
+trends in years before data center construction. This design allows us to
+estimate the association between data center presence and prices while
+controlling for observable confounders.
+
+\subsection{Why This is a Distributed Systems Problem}
+
+\textbf{Computational Challenges:}
+
+\begin{enumerate}
+	\item \textbf{Data Volume:} 28,371 utility-year observations (U.S. EIA Form
+			861, 2015--2024); 93 data centers with location, capacity, and
+			temporal data; requires efficient parallel processing for joins and
+			aggregations
+    
+	\item \textbf{Feature Engineering Complexity:} Spatial joins (matching data
+			centers to utility territories); window functions (cumulative
+			metrics over time); group-by operations across state-year
+			combinations
+    
+	\item \textbf{Model Training at Scale:} Decision tree construction benefits
+			from distributed splits; linear regression requires distributed matrix
+			operations for large feature sets; hyperparameter tuning and
+			cross-validation multiply computational requirements
+    
+	\item \textbf{Fault Tolerance:} Long-running jobs (data processing + model
+			training) need checkpoint recovery; HDFS replication prevents data
+			loss;
+\end{enumerate}
+
+\subsection{Technical Implementation and Challenges}
+
+Our project evolved through multiple iterations as we encountered practical
+distributed computing challenges.
+
+\textbf{Original GBT plan}
+Our first attempt involved deploying Gradient Boosted Trees (GBT) which would've
+offered optimal prediction accuracy and automatic feature engineering. However,
+when implementing Spark's \texttt{GBTRegressor}, we encountered persistent
+\texttt{MetadataFetchFailedException} errors during the iterative boosting phase.
+
+We believe the root cause of this failure was due to either:
+\begin{itemize}
+	\item Operations exceeded shuffle capacity
+	\item Worker node(s) crashed during training
+\end{itemize}
+
+We experimented with adjusting Spark parameters to reduce the number of
+computations required, however we were not able to resolve the issue before the
+project deadline. We also tried implementing Linear Regression instead, however
+we ran into the exact same issue.
+
+\textbf{Decision to use a Decision Tree:} Decision Tree training succeeded
+because the construction of the tree requires less inter-node communication than
+iterative optimization. However, a Decision Tree provides less causal
+information than GBT or Linear Regression could. Future work in this space could
+greatly expand on the confidence and conclusions by resolving the
+\texttt{MetadataFetchFailedException}s.
+
+\subsubsection{Decision Tree Regression (ML Approach)}
+
+\textbf{Purpose:} Prediction and feature importance
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Captures non-linear relationships (e.g., prices increase sharply after 5th data center)
+    \item Automatic interaction detection (e.g., effect of data centers varies by state size)
+    \item Robust to outliers
+    \item No distributional assumptions
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Less interpretable coefficients (no ``\$/kWh per data center'' estimate)
+    \item Prone to overfitting on small datasets
+    \item Harder to establish statistical significance
+    \item Not standard in economics literature
+\end{itemize}
+
+\subsubsection{Linear Regression (Econometric Approach)}
+
+\textbf{Purpose:} Causal inference and policy interpretation
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Interpretable coefficients (e.g., ``each data center increases prices by \$0.002/kWh'')
+    \item Statistical significance testing (p-values, confidence intervals)
+    \item Standard in economics and policy research
+    \item Allows theoretical predictions about effect size
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Assumes linear relationships
+    \item Sensitive to outliers
+    \item Requires careful specification to avoid omitted variable bias
+\end{itemize}
+
+\subsubsection{Our Strategy: Use BOTH Models}
+
+\begin{itemize}
+    \item \textbf{Decision Tree:} For prediction accuracy and feature importance (which variables matter most?)
+    \item \textbf{Linear Regression:} For causal interpretation and hypothesis testing (is the effect statistically significant?)
+\end{itemize}
+
+This dual approach is increasingly common in applied economics and data science, combining the predictive power of ML with the inferential rigor of econometrics.
+
+\subsection{Distributed Computing Frameworks}
+
+\subsubsection{Why Apache Spark?}
+
+\textbf{Alternatives Considered:}
+
+\textbf{Hadoop MapReduce:}
+\begin{itemize}
+    \item \textbf{Pros:} Battle-tested, fault-tolerant, works with any programming language
+    \item \textbf{Cons:} Verbose code, poor iterative performance (writes to disk between stages), limited ML library
+    \item \textbf{Verdict:} Too low-level for this project
+\end{itemize}
+
+\textbf{Dask (Python):}
+\begin{itemize}
+    \item \textbf{Pros:} Familiar pandas-like API, easy to learn
+    \item \textbf{Cons:} Less mature than Spark, smaller ecosystem, weaker fault tolerance
+    \item \textbf{Verdict:} Good for prototyping, not production-scale
+\end{itemize}
+
+\textbf{Ray (Python):}
+\begin{itemize}
+    \item \textbf{Pros:} Flexible distributed computing, good for deep learning
+    \item \textbf{Cons:} Newer framework, less documentation, overkill for tabular data
+    \item \textbf{Verdict:} Better suited for RL/DL applications
+\end{itemize}
+
+\textbf{Apache Spark (Scala/PySpark):}
+\begin{itemize}
+    \item \textbf{Pros:} 
+    \begin{itemize}
+        \item In-memory computation (100x faster than Hadoop for iterative algorithms)
+        \item Rich ML library (MLlib) with distributed algorithms
+        \item Unified batch and SQL processing
+        \item Strong fault tolerance via RDD lineage
+        \item Large community and extensive documentation
+    \end{itemize}
+    \item \textbf{Cons:} 
+    \begin{itemize}
+        \item Steeper learning curve than pandas
+        \item Scala/JVM ecosystem less familiar to data scientists
+        \item Memory requirements can be high
+    \end{itemize}
+    \item \textbf{Verdict:} \textbf{SELECTED} - Best balance of performance, features, and industry relevance
+\end{itemize}
+
+\textbf{Spark MLlib Benefits for This Project:}
+\begin{itemize}
+    \item \texttt{DecisionTreeRegressor}: Distributed tree construction
+    \item \texttt{LinearRegression}: Distributed matrix operations (gradient descent)
+    \item \texttt{RegressionEvaluator}: Parallel metric computation (RMSE, $R^2$, MAE)
+    \item \texttt{VectorAssembler}: Efficient feature preparation
+    \item Window functions: Distributed cumulative metrics
+\end{itemize}
+
+% ===========================
+% 4. METHODOLOGY
+% ===========================
+\section{Methodology}
+
+\subsection{Data Collection and Preparation}
+
+\subsubsection{Data Source 1: Electricity Pricing (EIA Form 861)}
+
+\textbf{Source:} U.S. Energy Information Administration
+
+\textbf{URL:} \url{https://www.eia.gov/electricity/data/eia861/}
+
+\textbf{Dataset:} Sales to Ultimate Customers (Annual, 2015--2024)
+
+\textbf{Format:} Excel files (converted to CSV)
+
+\textbf{Coverage:}
+\begin{itemize}
+    \item 28,371 utility-year observations
+    \item $\sim$3,000 unique utilities nationwide
+    \item All 50 US states + DC + territories
+    \item 10-year time series (2015--2024)
+\end{itemize}
+
+\textbf{Key Fields:}
+\begin{itemize}
+    \item \texttt{Utility Number}: Unique federal identifier
+    \item \texttt{Utility Name}: Legal name of electric utility
+    \item \texttt{State}: Two-letter state code
+    \item \texttt{Data Year}: Reporting year
+    \item \texttt{Revenues}: Total revenue from residential customers (thousands of dollars)
+    \item \texttt{Sales (MWh)}: Total electricity sold to residential customers (megawatt-hours)
+    \item \texttt{Customers}: Number of residential customer accounts
+\end{itemize}
+
+\subsubsection{Data Source 2: Data Center Locations}
+
+\textbf{Original Data Center Compilation (93 facilities):}
+\begin{itemize}
+	\item Company press releases (Amazon, Google, Microsoft, Meta) and Kaggle
+		dataset: ``Data Center locations of Top Tech Companies'' by @mauryansshivam
+    \item News articles and building permits
+    \item Utility company regulatory filings
+    \item Data center industry databases (DatacenterHawk, Data Center Map)
+\end{itemize}
+
+\textbf{Coverage:}
+\begin{itemize}
+    \item \textbf{States:} 20 states (VA, TX, IA, AZ, OR, NC, GA, IL, OH, WA, CA, NE, NM, WY, SC, IN, ID, KS, MO, NV)
+    \item \textbf{Time Range:} 2006--2024 opening years
+    \item \textbf{Operators:} Amazon/AWS, Google, Microsoft, Meta, Apple, IBM, Oracle, Equinix, CyrusOne, Digital Realty, QTS, Iron Mountain, others
+\end{itemize}
+
+\textbf{Data Limitations:}
+\begin{itemize}
+    \item $\sim$33\% of facilities missing opening years (filled as 0 for analysis)
+    \item $\sim$40\% missing capacity estimates (not all used in final models)
+    \item Utility names manually researched (some uncertainty for multi-utility service areas)
+\end{itemize}
+
+\subsubsection{Data Preparation Pipeline}
+PH
+
+\subsection{Machine Learning Models}
+Our implementation centers on a Decision Tree regression. As mentioned earlier,
+ideally we would've used a Gradient Boosted Tree or Linear Regression, Decision
+Trees still offer several practical analytical perks:
+
+\begin{itemize}
+	\item Automatic detection of non-linear relationships and threshold effect
+	\item Feature importance quantifying which variables drive predicitions
+	\item Outlier resistance
+\end{itemize}
+
+\textbf{Limitations:} All that being said, Decision Tress cannot provide
+coefficient estimates (\$/kWh per data center) or statistical significant
+(p-values). Future work should focus on implementing Linear Regression at the
+very least to secure these metrics.
+
+\textbf{5. Economic Impact}
+
+\begin{lstlisting}[language=Scala]
+val avgHouseholdConsumption = 10000.0  // kWh/year
+val annualImpact = rmse * avgHouseholdConsumption
+\end{lstlisting}
+
+\textbf{Interpretation:} Translates RMSE to annual dollar impact on typical household.
+
+% ===========================
+% 5. EXPERIMENTAL BENCHMARKS
+% ===========================
+\section{Experimental Benchmarks}
+
+\subsection{Model Performance Results}
+
+\subsubsection{Decision Tree Regressor}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Root Mean Square Error (RMSE) & \$0.0153/kWh \\
+Mean Absolute Error (MAE) & \$\textbf{[TBF]}/kWh \\
+$R^2$ (R-Squared) & 0.177 (17.7\%) \\
+\midrule
+\multicolumn{2}{l}{\textit{Economic Interpretation:}} \\
+\multicolumn{2}{l}{Average household (10,000 kWh/year): $\pm$\$153/year prediction error} \\
+\multicolumn{2}{l}{Typical residential price: $\sim$\$0.12/kWh} \\
+\multicolumn{2}{l}{RMSE represents $\sim$12.8\% of average price} \\
+\bottomrule
+\end{tabular}
+\caption{Decision Tree Regressor Performance Metrics}
+\end{table}
+
+\subsection{Individual State Results}
+\subsubsection{Arizona}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/AZ.png}
+\caption{Arizona electricity prices (2014--2022) with counterfactual scenarios. The black line shows actual observed prices, while colored dashed lines represent simulated prices under different data center growth assumptions (baseline, -10\%, +10\%, +20\%, -25\%, +50\%, and complete absence). The sharp increase in actual prices after 2021 coincides with major data center expansion in the region, though other factors such as natural gas prices and extreme weather events must be considered. The divergence between actual and baseline scenarios is suggestive but does not establish definitive causation.}
+\label{fig:arizona}
+\end{figure}
+
+% ===========================
+% 6. INSIGHTS GLEANED
+% ===========================
+\section{Insights Gleaned}
+
+\subsection{Empirical Findings}
+
+\subsubsection{Primary Finding: Predictive Relationship Established}
+
+Our Decision Tree model demonstrates that data center metrics predict
+approximately 18\% of electricity price variation ($R^2 = 0.177$). This
+moderate predictive power suggests a meaningful relationship, though we cannot
+establish causation without additional controls and causal inference methods.
+
+\textbf{Evidence:}
+\begin{itemize}
+    \item Model Fit: RMSE = \$0.0153/kWh (12.8\% of average price)
+    \item Variance Explained: $R^2 = 0.177$ (consistent with literature)
+    \item Feature Importance: [YOUR VALUES - Cum\_DC: X\%, Cum\_MW: Y\%]
+\end{itemize}
+
+\textbf{Interpretation:}
+
+If Cum\_DC importance $>$ Cum\_MW (e.g., 65\% vs 35\%): The NUMBER of data
+centers matters more than total capacity. Policy implication: focus on limiting
+facility COUNT.
+
+If Cum\_MW importance $>$ Cum\_DC (e.g., 70\% vs 30\%): Total POWER DRAW matters
+more than facility count. Policy implication: focus on limiting total MEGAWATTS.
+
+\textbf{Limitations:} This is a PREDICTIVE relationship, not proven causation.
+The association could reflect data centers impacting prices, reverse causation,
+or confounding factors.
+
+% ===========================
+% 8. CONCLUSIONS
+% ===========================
+\section{Conclusions}
+
+\subsection{Summary of Findings}
+
+\textbf{Research Question:} Do AI data centers increase residential electricity prices in nearby communities?
+
+\textbf{Our Approach:} We compiled a dataset of 93 data centers across 20 US
+states and matched them with utility-level electricity pricing data
+(2015--2024), creating a 240-observation panel dataset. Using Apache Spark
+across an 18-machine cluster, we trained a Decision Tree model to quantify the
+relationship between data center presence and residential electricity prices.
+
+\textbf{Key Results:}
+
+\textbf{Model Performance:} Decision Tree: RMSE = \$0.0153/kWh, $R^2 = 0.177$
+
+\textbf{Key Results:}
+
+Our Decision Tree model establishes a predictive relationship between data
+center presence and electricity prices, explaining 17.7\% of price variation.
+Feature importance analysis reveals [which metric matters more], providing
+insights for policy decisions.
+
+\textbf{Interpretation:}
+We establish a PREDICTIVE relationship but cannot claim CAUSATION due to lack of
+control variables and inability to implement regression-based statistical tests.
+Our findings justify future research with stronger causal inference methods.
+
+% ===========================
+% BIBLIOGRAPHY
+% ===========================
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{angrist2009}
+Angrist, J. D., \& Pischke, J. S. (2009). \textit{Mostly Harmless Econometrics: An Empiricist's Companion}. Princeton University Press.
+
+\bibitem{bellemare2015}
+Bellemare, M. F. (2015). On R-squared in applied economics. Blog post. Retrieved from \url{https://marcfbellemare.com/wordpress/10793}
+
+\bibitem{borenstein2015}
+Borenstein, S., \& Bushnell, J. (2015). The US electricity industry after 20 years of restructuring. \textit{Annual Review of Economics}, 7, 437--463.
+
+\bibitem{chernozhukov2018}
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., \& Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. \textit{The Econometrics Journal}, 21(1), C1--C68.
+
+\bibitem{cohen1988}
+Cohen, J. (1988). \textit{Statistical Power Analysis for the Behavioral Sciences} (2nd ed.). Hillsdale, NJ: Lawrence Erlbaum Associates.
+
+\bibitem{davis2016}
+Davis, L. W., \& Hausman, C. (2016). Market impacts of a nuclear power plant closure. \textit{American Economic Journal: Applied Economics}, 8(2), 92--122.
+
+\bibitem{dean2004}
+Dean, J., \& Ghemawat, S. (2004). MapReduce: Simplified data processing on large clusters. In \textit{OSDI'04: Sixth Symposium on Operating System Design and Implementation} (pp. 137--150).
+
+\bibitem{deschenes2011}
+Deschênes, O., \& Greenstone, M. (2011). Climate change, mortality, and adaptation: Evidence from annual fluctuations in weather in the US. \textit{American Economic Journal: Applied Economics}, 3(4), 152--185.
+
+\bibitem{eia2024}
+U.S. Energy Information Administration. (2024). \textit{Form EIA-861 Detailed Data Files} (2015--2024). Retrieved from \url{https://www.eia.gov/electricity/data/eia861/}
+
+\bibitem{falk1992}
+Falk, R. F., \& Miller, N. B. (1992). \textit{A Primer for Soft Modeling}. University of Akron Press.
+
+\bibitem{imbens2015}
+Imbens, G. W., \& Rubin, D. B. (2015). \textit{Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction}. Cambridge University Press.
+
+\bibitem{jones2018}
+Jones, N. (2018). How to stop data centres from gobbling up the world's electricity. \textit{Nature}, 561(7722), 163--166.
+
+\bibitem{kaggle2023}
+Shivam, M. (2023). \textit{Data Center Locations of Top Tech Companies}. Kaggle dataset. Retrieved from \url{https://www.kaggle.com/datasets/mauryansshivam/list-of-data-centers-of-top-tech-companies}
+
+\bibitem{masanet2020}
+Masanet, E., Shehabi, A., Lei, N., Smith, S., \& Koomey, J. (2020). Recalibrating global data center energy-use estimates. \textit{Science}, 367(6481), 984--986.
+
+\bibitem{wager2018}
+Wager, S., \& Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. \textit{Journal of the American Statistical Association}, 113(523), 1228--1242.
+
+\bibitem{zaharia2016}
+Zaharia, M., Xin, R. S., Wendell, P., Das, T., Armbrust, M., Dave, A., ... \& Stoica, I. (2016). Apache Spark: A unified engine for big data processing. \textit{Communications of the ACM}, 59(11), 56--65.
+
+\end{thebibliography}
+
+\end{document}

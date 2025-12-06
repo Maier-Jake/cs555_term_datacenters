@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2025.3.23)  5 DEC 2025 00:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2025.3.23)  5 DEC 2025 17:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -582,8 +582,8 @@ st/fonts/enc/dvips/base/8r.enc}] [2] (./report.toc)
 \openout4 = `report.toc'.
 
  [3]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 1
-93.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 2
+18.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -592,71 +592,143 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.220 	\item T
-              he EIA data featured duplicates, null entries, etc. that required
+l.221     \item K
+                 ey fields: State, Year, Revenues (\$), Sales (MWh), Customers
 [1]
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 241.
+nput line 267.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.2}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.267 \textbf{Solution:}
-                         Two-stage aggregation with window functions: [2]
+l.273 //
+         All states with at least one data center [2]
 pdfTeX warning (ext4): destination with the same identifier (name{page.3}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.305     \item \texttt
-                       {sum().over(w)} computes running total without shuffle
-[3] [4]
+l.310 //
+         Stage 3: Compute running total using window function [3] [4] [5]
 LaTeX Info: Symbol \textrightarrow not provided by
             font family ptm in TS1 encoding.
-            Default family used instead on input line 392.
- [5] [6{/usr/share/texlive/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
-}] [7] [8]
-<figures/AZ.png, id=278, 1046.91125pt x 595.22375pt>
+            Default family used instead on input line 417.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[6{/usr/share/texlive/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+[7] [8] [9]
+<figures/AZ.png, id=292, 1046.91125pt x 595.22375pt>
 File: figures/AZ.png Graphic file (type png)
 <use figures/AZ.png>
-Package pdftex.def Info: figures/AZ.png  used on input line 555.
+Package pdftex.def Info: figures/AZ.png  used on input line 580.
 (pdftex.def)             Requested size: 399.29463pt x 227.01387pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-<figures/highvslow.png, id=281, 1413.28pt x 846.16125pt>
+<figures/highvslow.png, id=295, 1413.28pt x 846.16125pt>
 File: figures/highvslow.png Graphic file (type png)
 <use figures/highvslow.png>
-Package pdftex.def Info: figures/highvslow.png  used on input line 570.
+Package pdftex.def Info: figures/highvslow.png  used on input line 595.
 (pdftex.def)             Requested size: 399.29463pt x 239.06682pt.
+
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[9] [10 <./figures/AZ.png>] [11 <./figures/highvslow.png>] [12]
-Underfull \hbox (badness 10000) in paragraph at lines 661--662
+[10 <./figures/AZ.png>] [11 <./figures/highvslow.png>] [12] [13]
+Overfull \hbox (50.21162pt too wide) in paragraph at lines 709--712
+\T1/pcr/m/n/12 as-[]data-[]center-[]boom-[]continues-[]va-[]legislators-[]broac
+h-[]new-[]regulations/$[][] 
+ []
+
+
+Underfull \hbox (badness 6001) in paragraph at lines 713--717
+[]\T1/ptm/m/n/12 Bell Nun-nally & Mar-tin LLP. (2025, June 25). Texas Leg-is-la
+-ture Passes Im-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 713--717
+\T1/ptm/m/n/12 por-tant Reg-u-la-tory Changes for Texas Data Cen-ters and Other
+ Large Load
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 713--717
+\T1/ptm/m/n/12 Cus-tomers. Re-trieved from [][]$\T1/pcr/m/n/12 https : / / www 
+. bellnunnally . com / news /
+ []
+
+
+Overfull \hbox (340.7115pt too wide) in paragraph at lines 713--717
+\T1/pcr/m/n/12 texas-[]legislature-[]passes-[]important-[]regulatory-[]changes-
+[]for-[]texas-[]data-[]centers-[]and-[]other-[]large-[]load-[]customers/$[][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 718--719
 []\T1/ptm/m/n/12 Shivam, M. (2023). Data Cen-ter Lo-ca-tions of Top Tech Com-pa
 -nies. Kag-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 661--662
+Underfull \hbox (badness 10000) in paragraph at lines 718--719
 \T1/ptm/m/n/12 gle dataset. [][]$\T1/pcr/m/n/12 https : / / www . kaggle . com 
 / datasets / mauryansshivam /
  []
 
-[13] (./report.aux)
+[14]
+Underfull \hbox (badness 10000) in paragraph at lines 723--727
+[]\T1/ptm/m/n/12 U.S. De-part-ment of En-ergy. (2024, De-cem-ber 20). DOE Re-le
+ases
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 723--727
+\T1/ptm/m/n/12 New Re-port Eval-u-at-ing In-crease in Elec-tric-ity De-mand fro
+m Data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 723--727
+\T1/ptm/m/n/12 Cen-ters. Re-trieved from [][]$\T1/pcr/m/n/12 https : / / www . 
+energy . gov / articles /
+ []
+
+
+Overfull \hbox (100.6116pt too wide) in paragraph at lines 723--727
+\T1/pcr/m/n/12 doe-[]releases-[]new-[]report-[]evaluating-[]increase-[]electric
+ity-[]demand-[]data-[]centers$[][] 
+ []
+
+
+Underfull \hbox (badness 1028) in paragraph at lines 729--730
+[]\T1/ptm/m/n/12 U.S. En-ergy In-for-ma-tion Ad-min-is-tra-tion. (2024). \T1/pt
+m/m/it/12 Form EIA-861 De-tailed Data Files\T1/ptm/m/n/12 .
+ []
+
+
+Underfull \hbox (badness 2726) in paragraph at lines 732--733
+[]\T1/ptm/m/n/12 Maurya, S. (2023). \T1/ptm/m/it/12 Data Cen-ter Lo-ca-tions of
+ Top Tech Com-pa-nies\T1/ptm/m/n/12 . Kag-gle. Re-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 732--733
+\T1/ptm/m/n/12 trieved from [][]$\T1/pcr/m/n/12 https : / / www . kaggle . com 
+/ datasets / mauryansshivam /
+ []
+
+[15] (./report.aux)
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 2C3386601016ECCF34A708B291847873;4707.
+(rerunfilecheck)             Checksum: 7390682CDBA8DAF2EDBC0BEFA59A01FD;4460.
  ) 
 Here is how much of TeX's memory you used:
- 14870 strings out of 476041
- 229332 string characters out of 5793174
- 2077388 words of memory out of 6000000
- 34961 multiletter control sequences out of 15000+600000
+ 14885 strings out of 476041
+ 229620 string characters out of 5793174
+ 2060388 words of memory out of 6000000
+ 34970 multiletter control sequences out of 15000+600000
  559544 words of font info for 96 fonts, out of 8000000 for 9000
  1137 hyphenation exceptions out of 8191
- 75i,12n,76p,583b,1271s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,76p,583b,2101s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive
@@ -665,10 +737,10 @@ r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share
 onts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
 w/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.
 pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on report.pdf (16 pages, 536143 bytes).
+Output written on report.pdf (18 pages, 539715 bytes).
 PDF statistics:
- 398 PDF objects out of 1000 (max. 8388607)
- 354 compressed objects within 4 object streams
- 140 named destinations out of 1000 (max. 500000)
- 227 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 437 PDF objects out of 1000 (max. 8388607)
+ 391 compressed objects within 4 object streams
+ 146 named destinations out of 1000 (max. 500000)
+ 219 words of extra memory for PDF output out of 10000 (max. 10000000)
 

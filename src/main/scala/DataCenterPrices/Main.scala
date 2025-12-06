@@ -192,15 +192,13 @@ object Main {
     val rf = new RandomForestRegressor()
       .setFeaturesCol("features")
       .setLabelCol("label")
-      .setNumTrees(200)
-      .setMaxDepth(8)
       .setMinInstancesPerNode(5)
       .setSubsamplingRate(1.0)
 
     // Hyper-parameter tuning, this is fine because we have a tiny dataset.
     val paramGrid = new ParamGridBuilder()
-      .addGrid(rf.numTrees, Array(100, 200, 300))
-      .addGrid(rf.maxDepth, Array(4, 6, 8))
+      .addGrid(rf.numTrees, Array(25, 50, 100, 200, 300))
+      .addGrid(rf.maxDepth, Array(2, 3, 4, 6, 8, 10))
       .build()
 
     val evaluator = new RegressionEvaluator()
@@ -233,15 +231,33 @@ object Main {
     // Evaluate on test set
     val predictions = model.transform(test)
 
-    // Collect all log messages to write to hdfs
+    // Collect results and save to file...
+    val importances = model.featureImportances.toArray
+
+    val impDCOpened  = s"IMPORTANCE - DC_Opened: ${importances(0)}"
+    val impPrevPrice = s"IMPORTANCE - PrevPrice: ${importances(1)}"
+    val impStateVec  = s"IMPORTANCE - StateVec: ${importances(2)}"
+
+    // Which hyperparameters were chosen?
+    val bestParams = cvModel.getEstimatorParamMaps
+      .zip(cvModel.avgMetrics)
+      .maxBy(_._2)._1
+
+    // Collect all log messages to write to HDFS
     val results = Seq(
+      s"NumTrees: ${bestParams(rf.numTrees)}",
+      s"MaxDepth: ${bestParams(rf.maxDepth)}",
       s"RMSE: ${evaluator.setMetricName("rmse").evaluate(predictions)}",
-      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}"
+      s"R2:   ${evaluator.setMetricName("r2").evaluate(predictions)}",
+      impDCOpened,
+      impPrevPrice,
+      impStateVec
     )
-    spark.createDataset(results).coalesce(1)
+
+    spark.createDataset(results)
+      .coalesce(1)
       .write.mode("overwrite")
       .text("hdfs:///results/run_logs")
-    println("Saved run logs to hdfs:///results/run_logs")
 
     spark.stop()
 
